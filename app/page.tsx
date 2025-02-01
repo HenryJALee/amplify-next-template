@@ -4,7 +4,7 @@ import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
 import React, { useState, useEffect } from 'react';
 import { uploadData, getUrl, list } from 'aws-amplify/storage';
-import { Star, MessageCircle, Users, Trophy, Link2, Heart, Share2, LogOut, User, Play } from 'lucide-react';
+import { Star, Link2, Heart, Share2, User, Play } from 'lucide-react';
 import { signOut, getCurrentUser } from 'aws-amplify/auth';
 import Image from 'next/image'
 import { Amplify } from 'aws-amplify';
@@ -216,14 +216,6 @@ export default function Page() {
 
     fetchUserData();
   }, []);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
 
   // Add function to update user data
   const updateField = async (field: keyof User, value: string) => {
