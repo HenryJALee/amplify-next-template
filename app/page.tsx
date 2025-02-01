@@ -1,5 +1,7 @@
 'use client';
 
+import { generateClient } from "aws-amplify/data";
+import type { Schema } from "@/amplify/data/resource";
 import React, { useState, useEffect } from 'react';
 import { uploadData, getUrl, list } from 'aws-amplify/storage';
 import { Star, MessageCircle, Users, Trophy, Link2, Heart, Share2, LogOut, User, Play } from 'lucide-react';
@@ -22,6 +24,17 @@ type Activity = {
   platform?: string;
   points: number;
   date: string;
+};
+
+// Simplified User type
+type User = {
+  id: string;
+  username: string;
+  streetAddress?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipCode?: string | null;
+  country?: string | null;
 };
 
 type Ambassador = {
@@ -75,6 +88,10 @@ const DemoFeed: Post[] = [
 ];
 
 export default function Page() {
+  // Add new state for user data
+  const [userData, setUserData] = useState<User | null>(null);
+  const client = generateClient<Schema>();
+    
   const [profileImage, setProfileImage] = useState<ProfileImage | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
   const [activeSection, setActiveSection] = useState<'home' | 'community' | 'messages' | 'profile'>('home');  
@@ -156,6 +173,26 @@ export default function Page() {
     loadProfileImage();
   }, []);
 
+  // Add this effect to load user data
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const currentUser = await getCurrentUser();
+        const response = await client.models.User.list({
+          filter: { username: { eq: currentUser.username } }
+        });
+        
+        if (response.data && response.data.length > 0) {
+          setUserData(response.data[0]);
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      }
+    };
+
+    loadUserData();
+  }, []);   
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -187,6 +224,33 @@ export default function Page() {
       console.error('Error signing out:', error);
     }
   };
+
+  // Add function to update user data
+  const updateField = async (field: keyof User, value: string) => {
+    try {
+      const currentUser = await getCurrentUser();
+      const updateData = { [field]: value || null };
+      
+      if (!userData?.id) {
+        // Create new user if doesn't exist
+        const newUser = await client.models.User.create({
+          username: currentUser.username,
+          ...updateData
+        });
+        setUserData(newUser.data);
+      } else {
+        // Update existing user
+        const updatedUser = await client.models.User.update({
+          id: userData.id,
+          ...updateData
+        });
+        setUserData(updatedUser.data);
+      }
+    } catch (error) {
+      console.error('Error updating field:', error);
+    }
+  };
+
 
   // Handle username update
   const handleUsernameChange = (newUsername: string) => {
@@ -270,6 +334,13 @@ export default function Page() {
         );
 
         case 'profile':
+          const fields = [
+            { key: 'streetAddress' as keyof User, label: 'Street Address' },
+            { key: 'city' as keyof User, label: 'City' },
+            { key: 'state' as keyof User, label: 'State' },
+            { key: 'zipCode' as keyof User, label: 'ZIP Code' },
+            { key: 'country' as keyof User, label: 'Country' }
+          ];
           return (
             <div className="p-6 max-w-4xl mx-auto">
               <form className="space-y-8" onSubmit={(e) => e.preventDefault()}>
@@ -315,26 +386,26 @@ export default function Page() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Personal Information Section */}
                 <div className="bg-white rounded-lg shadow p-6">
-                  <h2 className="text-lg font-semibold mb-4">Personal Information</h2>
+                <h2 className="text-lg font-semibold mb-4">Personal Information</h2>
                   <div className="space-y-6">
-                  {/* Username field */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full p-2 border rounded"
-                      value={ambassador.username}
-                      onChange={(e) => handleUsernameChange(e.target.value)}
-                      placeholder="Enter your username"
-                    />
-                  </div>   
+                    {/* Username field */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Username
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full p-2 border rounded"
+                        value={ambassador.username}
+                        onChange={(e) => handleUsernameChange(e.target.value)}
+                        placeholder="Enter your username"
+                      />
+                    </div>   
+                  </div>
                 </div>
-              </div>
 
                 {/* Social Media Handles Section */}
                 <div className="bg-white rounded-lg shadow p-6">
@@ -383,33 +454,10 @@ export default function Page() {
                   </div>
                 </div>
  
-                {/* Shipping Address Section */}
+                {/* Address Section */}
                 <div className="bg-white rounded-lg shadow p-6">
-                  <h2 className="text-lg font-semibold mb-4">Shipping Address</h2>
-                  <div className="grid grid-cols-1 gap-4"><div className="grid grid-cols-2 gap-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          First Name
-        </label>
-        <input
-          type="text"
-          className="w-full p-2 border rounded"
-          placeholder="Enter first name"
-          required
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Last Name
-        </label>
-        <input
-          type="text"
-          className="w-full p-2 border rounded"
-          placeholder="Enter last name"
-          required
-        />
-      </div>
-    </div>
+                  <h2 className="text-lg font-semibold mb-4">Address Information</h2>
+                  <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Street Address
@@ -417,23 +465,13 @@ export default function Page() {
                       <input
                         type="text"
                         className="w-full p-2 border rounded"
-                        placeholder="Enter your street address"
-                        required
+                        value={userData?.streetAddress || ''}
+                        onChange={(e) => updateField('streetAddress', e.target.value)}
+                        placeholder="Enter street address"
                       />
                     </div>
-        
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Apartment, suite, etc. (optional)
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full p-2 border rounded"
-                        placeholder="Apt, Suite, Unit, etc."
-                      />
-                    </div>
-        
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           City
@@ -441,48 +479,55 @@ export default function Page() {
                         <input
                           type="text"
                           className="w-full p-2 border rounded"
+                          value={userData?.city || ''}
+                          onChange={(e) => updateField('city', e.target.value)}
                           placeholder="Enter city"
-                          required
                         />
                       </div>
-        
+                      
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           State
                         </label>
-                        <select
+                        <input
+                          type="text"
                           className="w-full p-2 border rounded"
-                          required
-                        >
-                          <option value="">Select State</option>
-                          {[
-                            'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
-                            'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
-                            'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
-                            'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
-                            'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
-                          ].map(state => (
-                            <option key={state} value={state}>{state}</option>
-                          ))}
-                        </select>
+                          value={userData?.state || ''}
+                          onChange={(e) => updateField('state', e.target.value)}
+                          placeholder="Enter state"
+                        />
                       </div>
-        
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           ZIP Code
                         </label>
                         <input
                           type="text"
-                          pattern="[0-9]{5}"
-                          maxLength={5}
                           className="w-full p-2 border rounded"
+                          value={userData?.zipCode || ''}
+                          onChange={(e) => updateField('zipCode', e.target.value)}
                           placeholder="Enter ZIP code"
-                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Country
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded"
+                          value={userData?.country || ''}
+                          onChange={(e) => updateField('country', e.target.value)}
+                          placeholder="Enter country"
                         />
                       </div>
                     </div>
                   </div>
-                </div>
+                </div>        
         
                 {/* Save Button */}
                 <div className="flex justify-end">
