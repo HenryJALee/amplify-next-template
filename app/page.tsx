@@ -239,15 +239,6 @@ export default function Page() {
       alert('Error saving changes. Please try again.');
     }
   };
-
-  // Handle username update
-  const handleUsernameChange = (newUsername: string) => {
-    setAmbassador(prev => ({
-      ...prev,
-      username: newUsername
-    }));
-    // Here you would typically also update this in your backend
-  };
   
   const renderContent = () => {
     switch (activeSection) {
