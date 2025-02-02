@@ -17,8 +17,8 @@ const schema = a.schema({
   User: a
     .model({
       username: a.string().required(),
-      address: a.string(),
-      // You might want to break down the address into more specific fields
+      firstName: a.string(),
+      lastName: a.string(),
       streetAddress: a.string(),
       city: a.string(),
       state: a.string(),

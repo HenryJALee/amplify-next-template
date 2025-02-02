@@ -31,6 +31,8 @@ type Activity = {
 type User = {
   id: string;
   username: string;
+  firstName?: string | null;
+  lastName?: string | null;
   streetAddress?: string | null;
   city?: string | null;
   state?: string | null;
@@ -338,13 +340,6 @@ export default function Page() {
         );
 
         case 'profile':
-          const fields = [
-            { key: 'streetAddress' as keyof User, label: 'Street Address' },
-            { key: 'city' as keyof User, label: 'City' },
-            { key: 'state' as keyof User, label: 'State' },
-            { key: 'zipCode' as keyof User, label: 'ZIP Code' },
-            { key: 'country' as keyof User, label: 'Country' }
-          ];
           return (
             <div className="p-6 max-w-4xl mx-auto">
               <form className="space-y-8" onSubmit={(e) => e.preventDefault()}>
@@ -408,6 +403,35 @@ export default function Page() {
                         placeholder="Enter your username"
                       />
                     </div>   
+                  </div>
+                </div>
+
+                {/* Name fields */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      First Name
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded"
+                      value={userData?.firstName || ''}
+                      onChange={(e) => updateField('firstName', e.target.value)}
+                      placeholder="Enter first name"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded"
+                      value={userData?.lastName || ''}
+                      onChange={(e) => updateField('lastName', e.target.value)}
+                      placeholder="Enter last name"
+                    />
                   </div>
                 </div>
 
