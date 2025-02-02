@@ -16,7 +16,8 @@ const schema = a.schema({
     
   User: a
     .model({
-      username: a.string().required(),
+      cognitoId: a.string().required(), // Add this to link to Cognito user
+      username: a.string(),  // Make this optional
       firstName: a.string(),
       lastName: a.string(),
       streetAddress: a.string(),
@@ -24,8 +25,13 @@ const schema = a.schema({
       state: a.string(),
       zipCode: a.string(),
       country: a.string(),
+      profileImage: a.string(),
+      points: a.integer(),
+      tier: a.string(),
+      discountCode: a.string(),
+      recentActivity: a.string().array()
     })
-    .authorization((allow) => [allow.owner()]),
+    .authorization((allow) => [allow.owner()])
 });
 
 export type Schema = ClientSchema<typeof schema>;

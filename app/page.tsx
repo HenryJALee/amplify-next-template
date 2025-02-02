@@ -27,10 +27,10 @@ type Activity = {
   date: string;
 };
 
-// Simplified User type
+// Update User type
 type User = {
   id: string;
-  username: string;
+  username?: string | null;  // Make username optional
   firstName?: string | null;
   lastName?: string | null;
   streetAddress?: string | null;
@@ -91,8 +91,11 @@ const DemoFeed: Post[] = [
 ];
 
 export default function Page() {
-  // Add new state for user data
+  // Add new states for user data
   const [userData, setUserData] = useState<User | null>(null);
+  const [usernameError, setUsernameError] = useState<string>('');
+  const [formData, setFormData] = useState<Partial<User>>({});
+
   const client = generateClient<Schema>();
   const router = useRouter();
     
@@ -187,7 +190,7 @@ export default function Page() {
     loadProfileImage();
   }, []);
 
-  // Add this effect to load user data
+  // Load user data on mount
   useEffect(() => {
     const loadUserData = async () => {
       try {
@@ -198,6 +201,19 @@ export default function Page() {
         
         if (response.data && response.data.length > 0) {
           setUserData(response.data[0]);
+          setFormData(response.data[0]); // Initialize form data
+          setAmbassador({
+            name: currentUser.username || "Ambassador",
+            username: currentUser.username || "",
+            points: 750,
+            tier: "Wonder Advocate",
+            discountCode: `WONDER${currentUser.username.toUpperCase()}`,  // Changed from affiliateLink
+            recentActivity: [
+              { type: "Post", platform: "TikTok", points: 50, date: "2024-01-25" },
+              { type: "Review", points: 25, date: "2024-01-24" },
+              { type: "Referral", points: 100, date: "2024-01-23" }
+            ]
+          });
         }
       } catch (error) {
         console.error('Error loading user data:', error);
@@ -205,58 +221,77 @@ export default function Page() {
     };
 
     loadUserData();
-  }, []);   
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const currentUser = await getCurrentUser();
-        setAmbassador({
-          name: currentUser.username || "Ambassador",
-          username: currentUser.username || "",
-          points: 750,
-          tier: "Wonder Advocate",
-          discountCode: `WONDER${currentUser.username.toUpperCase()}`,  // Changed from affiliateLink
-          recentActivity: [
-            { type: "Post", platform: "TikTok", points: 50, date: "2024-01-25" },
-            { type: "Review", points: 25, date: "2024-01-24" },
-            { type: "Referral", points: 100, date: "2024-01-23" }
-          ]
-        });
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
-    };
-
-    fetchUserData();
   }, []);
 
-  // Add function to update user data
-  const updateField = async (field: keyof User, value: string) => {
+  // Handle input changes
+  const handleInputChange = (field: keyof User, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    // Clear username error when user types
+    if (field === 'username') {
+      setUsernameError('');
+    }
+  };
+
+  // Check if username is unique
+  const isUsernameUnique = async (username: string): Promise<boolean> => {
     try {
+      const response = await client.models.User.list({
+        filter: { username: { eq: username } }
+      });
+      
+      // If there are no users with this username, or the only user is the current user
+      return !response.data?.length || 
+              (response.data.length === 1 && response.data[0].id === userData?.id);
+    } catch (error) {
+      console.error('Error checking username:', error);
+      return false;
+    }
+  };
+  
+  
+
+  // Save changes with username validation
+  const handleSaveChanges = async () => {
+    try {
+      // Check if username is provided
+      if (!formData.username) {
+        setUsernameError('Username is required');
+        return;
+      }
+
+      // Check username uniqueness
+      const isUnique = await isUsernameUnique(formData.username);
+      if (!isUnique) {
+        setUsernameError('This username is already taken');
+        return;
+      }
+
       const currentUser = await getCurrentUser();
-      const updateData = { [field]: value || null };
       
       if (!userData?.id) {
-        // Create new user if doesn't exist
+        // Create new user
         const newUser = await client.models.User.create({
-          username: currentUser.username,
-          ...updateData
+          cognitoId: currentUser.userId, // Store Cognito ID for reference
+          ...formData
         });
         setUserData(newUser.data);
       } else {
         // Update existing user
         const updatedUser = await client.models.User.update({
           id: userData.id,
-          ...updateData
+          ...formData
         });
         setUserData(updatedUser.data);
       }
+      alert('Changes saved successfully!');
     } catch (error) {
-      console.error('Error updating field:', error);
+      console.error('Error saving changes:', error);
+      alert('Error saving changes. Please try again.');
     }
   };
-
 
   // Handle username update
   const handleUsernameChange = (newUsername: string) => {
@@ -397,16 +432,21 @@ export default function Page() {
                       </label>
                       <input
                         type="text"
-                        className="w-full p-2 border rounded"
-                        value={ambassador.username}
-                        onChange={(e) => handleUsernameChange(e.target.value)}
-                        placeholder="Enter your username"
+                        className={`w-full p-2 border rounded ${
+                          usernameError ? 'border-red-500' : ''
+                        }`}
+                        value={formData?.username || ''}
+                        onChange={(e) => handleInputChange('username', e.target.value)}
+                        placeholder="Choose a unique username"
                       />
-                    </div>   
+                      {usernameError && (
+                        <p className="mt-1 text-sm text-red-500">{usernameError}</p>
+                      )}
+                    </div>  
                   </div>
                 </div>
 
-                {/* Name fields */}
+                {/* Fist and Last Names */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -415,8 +455,8 @@ export default function Page() {
                     <input
                       type="text"
                       className="w-full p-2 border rounded"
-                      value={userData?.firstName || ''}
-                      onChange={(e) => updateField('firstName', e.target.value)}
+                      value={formData?.firstName || ''}
+                      onChange={(e) => handleInputChange('firstName', e.target.value)}
                       placeholder="Enter first name"
                     />
                   </div>
@@ -428,141 +468,92 @@ export default function Page() {
                     <input
                       type="text"
                       className="w-full p-2 border rounded"
-                      value={userData?.lastName || ''}
-                      onChange={(e) => updateField('lastName', e.target.value)}
+                      value={formData?.lastName || ''}
+                      onChange={(e) => handleInputChange('lastName', e.target.value)}
                       placeholder="Enter last name"
                     />
                   </div>
                 </div>
 
-                {/* Social Media Handles Section */}
-                <div className="bg-white rounded-lg shadow p-6">
-                  <h2 className="text-lg font-semibold mb-4">Social Media Handles</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        TikTok Handle
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full p-2 border rounded"
-                        placeholder="@yourtiktok"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Instagram Handle
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full p-2 border rounded"
-                        placeholder="@yourinstagram"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Lemon8 Handle
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full p-2 border rounded"
-                        placeholder="@yourlemon8"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        YouTube Handle
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full p-2 border rounded"
-                        placeholder="@youryoutube"
-                      />
-                    </div>
+                {/* And update the Address Section inputs*/}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Street Address
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded"
+                      value={formData?.streetAddress || ''}
+                      onChange={(e) => handleInputChange('streetAddress', e.target.value)}
+                      placeholder="Enter street address"
+                    />
                   </div>
-                </div>
- 
-                {/* Address Section */}
-                <div className="bg-white rounded-lg shadow p-6">
-                  <h2 className="text-lg font-semibold mb-4">Address Information</h2>
-                  <div className="space-y-4">
+                  
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Street Address
+                        City
                       </label>
                       <input
                         type="text"
                         className="w-full p-2 border rounded"
-                        value={userData?.streetAddress || ''}
-                        onChange={(e) => updateField('streetAddress', e.target.value)}
-                        placeholder="Enter street address"
+                        value={formData?.city || ''}
+                        onChange={(e) => handleInputChange('city', e.target.value)}
+                        placeholder="Enter city"
                       />
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          City
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full p-2 border rounded"
-                          value={userData?.city || ''}
-                          onChange={(e) => updateField('city', e.target.value)}
-                          placeholder="Enter city"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          State
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full p-2 border rounded"
-                          value={userData?.state || ''}
-                          onChange={(e) => updateField('state', e.target.value)}
-                          placeholder="Enter state"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          ZIP Code
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full p-2 border rounded"
-                          value={userData?.zipCode || ''}
-                          onChange={(e) => updateField('zipCode', e.target.value)}
-                          placeholder="Enter ZIP code"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Country
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full p-2 border rounded"
-                          value={userData?.country || ''}
-                          onChange={(e) => updateField('country', e.target.value)}
-                          placeholder="Enter country"
-                        />
-                      </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        State
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full p-2 border rounded"
+                        value={formData?.state || ''}
+                        onChange={(e) => handleInputChange('state', e.target.value)}
+                        placeholder="Enter state"
+                      />
                     </div>
                   </div>
-                </div>        
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        ZIP Code
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full p-2 border rounded"
+                        value={formData?.zipCode || ''}
+                        onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                        placeholder="Enter ZIP code"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Country
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full p-2 border rounded"
+                        value={formData?.country || ''}
+                        onChange={(e) => handleInputChange('country', e.target.value)}
+                        placeholder="Enter country"
+                      />
+                    </div>
+                  </div>
+                </div>      
         
-                {/* Save Button */}
+                {/* Save Changes Button */}
                 <div className="flex justify-end">
                   <button
-                    type="submit"
+                    type="button"
+                    onClick={handleSaveChanges}
                     className="px-6 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 
-                             flex items-center gap-2"
+                            flex items-center gap-2"
                   >
                     Save Changes
                     <Link2 size={20} />
@@ -702,7 +693,7 @@ export default function Page() {
 
             <div className="flex items-center justify-center gap-2 mb-2">
               <p className="text-sm text-gray-600">
-                {ambassador.username ? `@${ambassador.username}` : 'No username set'}
+                {formData.username ? `@${formData.username}` : 'No username set'}
               </p>
               <Image 
                 src={PinkPalm} 
