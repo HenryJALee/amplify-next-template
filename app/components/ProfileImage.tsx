@@ -43,14 +43,12 @@ export const ProfileImage: React.FC<ProfileImageProps> = ({
             </div>
           ) : profileImage ? (
             <Image
-                src={profileImage.url}
-                alt="Profile"
-                width={size === 'sm' ? 48 : size === 'md' ? 96 : 128}
-                height={size === 'sm' ? 48 : size === 'md' ? 96 : 128}
-                className="object-cover w-full h-full"
-                priority
-                quality={75} 
-                unoptimized={false} 
+              src={profileImage.url}
+              alt="Profile"
+              width={size === 'sm' ? 48 : size === 'md' ? 96 : 128}
+              height={size === 'sm' ? 48 : size === 'md' ? 96 : 128}
+              className="object-cover w-full h-full"
+              priority
             />
           ) : (
             <User size={iconSizes[size]} className="text-gray-400" />

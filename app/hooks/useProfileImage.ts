@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { uploadData, getUrl, list, remove } from 'aws-amplify/storage';
+import { uploadData, getUrl, remove } from 'aws-amplify/storage';
 import { getCurrentUser } from 'aws-amplify/auth';
-import { generateClient } from 'aws-amplify/data';
-import type { Schema } from '@/amplify/data/resource';
+
 
 // Types
 export type ProfileImageType = {
@@ -21,7 +20,6 @@ export type UseProfileImageProps = {
 export const useProfileImage = ({ userData, onUpdateUser }: UseProfileImageProps) => {
   const [profileImage, setProfileImage] = useState<ProfileImageType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const client = generateClient<Schema>();
 
   // Load profile image
   useEffect(() => {
