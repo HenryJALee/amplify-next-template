@@ -86,6 +86,8 @@ export const useProfileImage = ({ userData, onUpdateUser }: UseProfileImageProps
         }
       });
 
+
+
       // Delete the old profile picture if it exists
       if (profileImage?.key) {
         try {

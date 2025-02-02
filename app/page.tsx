@@ -16,9 +16,9 @@ import GreenStar from '../public/icons/Green-Star.png';
 import YellowStar from '../public/icons/Yellow-Star.png';
 import PinkPalm from '../public/icons/Pink-Palm.png';
 // Add these imports at the top of page.tsx
+
 import { useProfileImage } from './hooks/useProfileImage';
-import type { ProfileImageType } from './hooks/useProfileImage';
-import { ProfileImage } from './components/ProfileImage';
+import { ProfileImage  } from './components/ProfileImage';
 
 
 
@@ -137,31 +137,6 @@ export default function Page() {
       console.error('Error signing out:', error);
     }
   };
-
-  // Add this effect to load the profile picture on component mount
-  useEffect(() => {
-    const loadProfileImage = async () => {
-      try {
-        const currentUser = await getCurrentUser();
-        const prefix = `profile/pictures/${currentUser.username}`;
-        
-        const results = await list({
-          prefix
-        });
-        
-        if (results.items.length > 0) {
-          const { url } = await getUrl({
-            path: results.items[0].key,
-          });
-          
-        }
-      } catch (error) {
-        console.error('Error loading profile image:', error);
-      }
-    };
-
-    loadProfileImage();
-  }, []);
 
   // Load user data on mount
   useEffect(() => {
