@@ -168,18 +168,7 @@ export default function Page() {
     };
 
     loadUserData();
-  }, []);
-
-  // Update the file input handler
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    
-    try {
-      await handleImageUpload(e.target.files[0]);
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to upload image');
-    }
-  };
+  });
 
   // Handle input changes
   const handleInputChange = (field: keyof User, value: string) => {
