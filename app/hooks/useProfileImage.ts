@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { uploadData, getUrl, remove } from 'aws-amplify/storage';
 import { getCurrentUser } from 'aws-amplify/auth';
 
-
-// Types
 export type ProfileImageType = {
   url: string;
   key: string;
@@ -21,40 +19,52 @@ export const useProfileImage = ({ userData, onUpdateUser }: UseProfileImageProps
   const [profileImage, setProfileImage] = useState<ProfileImageType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Load profile image
   useEffect(() => {
     const loadProfileImage = async () => {
-        if (!userData?.profileImageKey) return;
+      if (!userData?.profileImageKey) {
+        console.log('No profile image key found');
+        return;
+      }
+      
+      try {
+        console.log('Attempting to load profile image with key:', userData.profileImageKey);
         
-        try {
-            const urlResult = await getUrl({
-            key: userData.profileImageKey,
-            options: {
-                accessLevel: 'guest'
-            }
+        const urlResult = await getUrl({
+          key: userData.profileImageKey,
+          options: {
+            accessLevel: 'guest',
+            validateObjectExistence: true
+          }
+        });
+        
+        console.log('Successfully generated URL for profile image:', urlResult);
+        
+        setProfileImage({
+          url: urlResult.url.href,
+          key: userData.profileImageKey
+        });
+      } catch (error) {
+        console.error('Error loading profile image:', error);
+        // If the image doesn't exist in storage but we have a key, clean up the database
+        if (userData?.id && onUpdateUser) {
+          try {
+            await onUpdateUser({
+              id: userData.id,
+              profileImageKey: null
             });
-            
-            setProfileImage({
-                url: urlResult.url.href, // Using .href to get the string URL
-                key: userData.profileImageKey
-            });
-        } catch (error) {
-            console.error('Error loading profile image:', error);
+          } catch (cleanupError) {
+            console.error('Error cleaning up invalid profile image reference:', cleanupError);
+          }
         }
+      }
     };
 
     loadProfileImage();
-  }, [userData?.profileImageKey]);
+  }, [userData?.profileImageKey, userData?.id, onUpdateUser]);
 
-  // Handle image upload
   const handleImageUpload = async (file: File): Promise<void> => {
     try {
       setIsLoading(true);
-
-      // Validate file size (2MB limit)
-      if (file.size > 2 * 1024 * 1024) {
-        throw new Error('File size must be less than 2MB');
-      }
 
       const currentUser = await getCurrentUser();
       const fileExtension = file.name.split('.').pop()?.toLowerCase();
@@ -68,49 +78,66 @@ export const useProfileImage = ({ userData, onUpdateUser }: UseProfileImageProps
       const timestamp = Date.now();
       const filePath = `profile-pictures/${currentUser.userId}_${timestamp}.${fileExtension}`;
 
+      console.log('Uploading new profile image with key:', filePath);
+
       // Upload the new image
       await uploadData({
-            data: file,
-            key: filePath,
-            options: {
-                contentType: file.type,
-                accessLevel: 'guest'
-            }
-        });
+        data: file,
+        key: filePath,
+        options: {
+          contentType: file.type,
+          accessLevel: 'guest'
+        }
+      }).result;
+
+      console.log('Successfully uploaded file to S3');
+
+      // Add a small delay to ensure file is available
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Get the URL of the uploaded image
       const urlResult = await getUrl({
         key: filePath,
         options: {
-          accessLevel: 'guest'
+          accessLevel: 'guest',
+          validateObjectExistence: true
         }
       });
 
-
+      console.log('Generated URL for uploaded image:', urlResult);
 
       // Delete the old profile picture if it exists
       if (profileImage?.key) {
         try {
+          console.log('Attempting to delete old profile image:', profileImage.key);
           await remove({
-            path: profileImage.key,
+            key: profileImage.key,
+            options: {
+              accessLevel: 'guest'
+            }
           });
+          console.log('Successfully deleted old profile image');
         } catch (error) {
           console.error('Error deleting old profile picture:', error);
         }
       }
 
       // Update state with new profile image
-      setProfileImage({
-        url: urlResult.url.href, // Using .href to get the string URL
+      const newProfileImage = {
+        url: urlResult.url.href,
         key: filePath
-      });
+      };
+      console.log('Setting new profile image:', newProfileImage);
+      setProfileImage(newProfileImage);
 
       // Update user data in the database
       if (userData?.id && onUpdateUser) {
+        console.log('Updating user record with new profile image key:', filePath);
         await onUpdateUser({
           id: userData.id,
           profileImageKey: filePath
         });
+        console.log('Successfully updated user record');
       }
 
     } catch (error) {
@@ -121,12 +148,12 @@ export const useProfileImage = ({ userData, onUpdateUser }: UseProfileImageProps
     }
   };
 
-  // Handle profile picture removal
   const handleRemoveProfilePicture = async (): Promise<void> => {
     if (!profileImage?.key) return;
 
     try {
       setIsLoading(true);
+      console.log('Attempting to remove profile picture:', profileImage.key);
 
       // Remove the image from storage
       await remove({
@@ -136,12 +163,16 @@ export const useProfileImage = ({ userData, onUpdateUser }: UseProfileImageProps
         }
       });
 
+      console.log('Successfully removed image from storage');
+
       // Update user data in the database
       if (userData?.id && onUpdateUser) {
+        console.log('Updating user record to remove profile image reference');
         await onUpdateUser({
           id: userData.id,
           profileImageKey: null
         });
+        console.log('Successfully updated user record');
       }
 
       // Clear the profile image from state

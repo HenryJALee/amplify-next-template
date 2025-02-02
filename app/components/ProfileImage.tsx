@@ -2,14 +2,14 @@ import React from 'react';
 import Image from 'next/image';
 import { User } from 'lucide-react';
 import { ProfileImageType } from '../hooks/useProfileImage';
-
+import { FileUploader } from './FileUploader';
 
 type ProfileImageProps = {
   profileImage: ProfileImageType | null;
   isLoading?: boolean;
   size?: 'sm' | 'md' | 'lg';
-  onImageUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onImageRemove?: () => void;
+  onImageUpload?: (file: File) => Promise<void>;
+  onImageRemove?: () => Promise<void>;
   showUploadButton?: boolean;
 };
 
@@ -33,6 +33,12 @@ export const ProfileImage: React.FC<ProfileImageProps> = ({
   onImageRemove,
   showUploadButton = false
 }) => {
+  const handleFileSelect = async (file: File) => {
+    if (onImageUpload) {
+      await onImageUpload(file);
+    }
+  };
+
   return (
     <div className="flex items-center gap-6">
       <div className="relative">
@@ -58,32 +64,33 @@ export const ProfileImage: React.FC<ProfileImageProps> = ({
 
       {showUploadButton && onImageUpload && (
         <div className="flex-1">
-          <label className="block">
-            <span className="sr-only">Choose profile photo</span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={onImageUpload}
-              className="block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-full file:border-0
-                file:text-sm file:font-semibold
-                file:bg-pink-50 file:text-pink-700
-                hover:file:bg-pink-100
-                focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
-            />
-          </label>
-          <p className="mt-2 text-sm text-gray-500">
-            JPG, PNG or GIF up to 2MB
-          </p>
-          {profileImage && onImageRemove && (
-            <button
-              onClick={onImageRemove}
-              className="mt-2 text-sm text-red-600 hover:text-red-700 focus:outline-none focus:underline"
-            >
-              Remove photo
-            </button>
-          )}
+          <FileUploader
+            onFileSelect={handleFileSelect}
+            accept="image/*"
+            maxSize={2 * 1024 * 1024}
+          >
+            <div className="flex flex-col">
+              <button
+                type="button"
+                className="px-4 py-2 bg-pink-50 text-pink-700 rounded-lg hover:bg-pink-100 
+                          transition-colors focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
+              >
+                Upload new photo
+              </button>
+              <p className="mt-2 text-sm text-gray-500">
+                JPG, PNG or GIF up to 2MB
+              </p>
+              {profileImage && onImageRemove && (
+                <button
+                  onClick={onImageRemove}
+                  className="mt-2 text-sm text-red-600 hover:text-red-700 
+                            focus:outline-none focus:underline"
+                >
+                  Remove photo
+                </button>
+              )}
+            </div>
+          </FileUploader>
         </div>
       )}
     </div>

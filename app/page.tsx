@@ -343,7 +343,7 @@ export default function Page() {
                     profileImage={profileImage}
                     isLoading={imageLoading}
                     size="lg"
-                    onImageUpload={handleFileChange}
+                    onImageUpload={handleImageUpload}
                     onImageRemove={handleRemoveProfilePicture}
                     showUploadButton
                   />
