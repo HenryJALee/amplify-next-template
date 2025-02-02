@@ -101,10 +101,6 @@ export default function Page() {
   const [userData, setUserData] = useState<User | null>(null);
   const [usernameError, setUsernameError] = useState<string>('');
   const [formData, setFormData] = useState<Partial<User>>({});
-  const [profileImageType, setProfileImage] = useState<ProfileImageType | null>(null);
-
-  
-
   const client = generateClient<Schema>();
   const router = useRouter();
     
@@ -158,10 +154,6 @@ export default function Page() {
             path: results.items[0].key,
           });
           
-          setProfileImage({ 
-            url: url.toString(),
-            key: results.items[0].key 
-          });
         }
       } catch (error) {
         console.error('Error loading profile image:', error);

@@ -69,14 +69,14 @@ export const useProfileImage = ({ userData, onUpdateUser }: UseProfileImageProps
       const filePath = `profile-pictures/${currentUser.userId}_${timestamp}.${fileExtension}`;
 
       // Upload the new image
-      const result = await uploadData({
-        data: file,
-        key: filePath,
-        options: {
-          contentType: file.type,
-          accessLevel: 'guest'
-        }
-      });
+      await uploadData({
+            data: file,
+            key: filePath,
+            options: {
+                contentType: file.type,
+                accessLevel: 'guest'
+            }
+        });
 
       // Get the URL of the uploaded image
       const urlResult = await getUrl({
