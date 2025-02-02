@@ -3,7 +3,7 @@
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
 import React, { useState, useEffect } from 'react';
-import { uploadData, getUrl, list } from 'aws-amplify/storage';
+import { getUrl, list } from 'aws-amplify/storage';
 import { Star, Link2, Heart, Share2, User, Play, LogOut } from 'lucide-react';
 import { signOut, getCurrentUser } from 'aws-amplify/auth';
 import { useRouter } from 'next/navigation';
@@ -15,6 +15,11 @@ import BlueStar from '../public/icons/Blue-Star.png';
 import GreenStar from '../public/icons/Green-Star.png';
 import YellowStar from '../public/icons/Yellow-Star.png';
 import PinkPalm from '../public/icons/Pink-Palm.png';
+// Add these imports at the top of page.tsx
+import { useProfileImage } from './hooks/useProfileImage';
+import type { ProfileImageType } from './hooks/useProfileImage';
+import { ProfileImage } from './components/ProfileImage';
+
 
 
 Amplify.configure(outputs);
@@ -38,6 +43,7 @@ type User = {
   state?: string | null;
   zipCode?: string | null;
   country?: string | null;
+  profileImageKey?: string | null;
 };
 
 type Ambassador = {
@@ -95,12 +101,13 @@ export default function Page() {
   const [userData, setUserData] = useState<User | null>(null);
   const [usernameError, setUsernameError] = useState<string>('');
   const [formData, setFormData] = useState<Partial<User>>({});
+  const [profileImageType, setProfileImage] = useState<ProfileImageType | null>(null);
+
+  
 
   const client = generateClient<Schema>();
   const router = useRouter();
     
-  const [profileImage, setProfileImage] = useState<ProfileImage | null>(null);
-  const [imageLoading, setImageLoading] = useState(false);
   const [activeSection, setActiveSection] = useState<'home' | 'community' | 'messages' | 'profile'>('home');  
   const [ambassador, setAmbassador] = useState<Ambassador>({
     name: "",
@@ -109,6 +116,20 @@ export default function Page() {
     tier: "",
     discountCode: "",
     recentActivity: []
+  });
+
+  // Add the profile image hook
+  const { 
+    profileImage, 
+    isLoading: imageLoading, 
+    handleImageUpload, 
+    handleRemoveProfilePicture 
+  } = useProfileImage({ 
+    userData,
+    onUpdateUser: async (data) => {
+      const updatedUser = await client.models.User.update(data);
+      setUserData(updatedUser.data);
+    }
   });
 
   // Add the handleSignOut function
@@ -121,52 +142,12 @@ export default function Page() {
     }
   };
 
-  // Add this function to handle image upload
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!event.target.files || event.target.files.length === 0) {
-      return;
-    }
-
-    try {
-      setImageLoading(true);
-      const file = event.target.files[0];
-      const currentUser = await getCurrentUser();
-      const fileExtension = file.name.split('.').pop();
-      const filePath = `profile-pictures/${currentUser.username}.${fileExtension}`;
-
-      // Updated uploadData usage with path
-      await uploadData({
-        path: filePath, // Using path instead of key
-        data: file,
-        options: {
-          contentType: file.type,
-          onProgress: ({ transferredBytes, totalBytes }) => {
-            console.log(`Uploaded: ${transferredBytes}/${totalBytes}`);
-          },
-        }
-      });
-
-      const { url } = await getUrl({
-        path: filePath,
-      });
-      
-      setProfileImage({ 
-        url: url.toString(),
-        key: filePath 
-      });
-    } catch (error) {
-      console.error('Error uploading file:', error);
-    } finally {
-      setImageLoading(false);
-    }
-  };
-
   // Add this effect to load the profile picture on component mount
   useEffect(() => {
     const loadProfileImage = async () => {
       try {
         const currentUser = await getCurrentUser();
-        const prefix = `profile-pictures/${currentUser.username}`;
+        const prefix = `profile/pictures/${currentUser.username}`;
         
         const results = await list({
           prefix
@@ -222,6 +203,17 @@ export default function Page() {
 
     loadUserData();
   }, []);
+
+  // Update the file input handler
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    try {
+      await handleImageUpload(e.target.files[0]);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Failed to upload image');
+    }
+  };
 
   // Handle input changes
   const handleInputChange = (field: keyof User, value: string) => {
@@ -291,6 +283,15 @@ export default function Page() {
       console.error('Error saving changes:', error);
       alert('Error saving changes. Please try again.');
     }
+  };
+
+  // Handle username update
+  const handleUsernameChange = (newUsername: string) => {
+    setAmbassador(prev => ({
+      ...prev,
+      username: newUsername
+    }));
+    // Here you would typically also update this in your backend
   };
   
   const renderContent = () => {
@@ -372,44 +373,14 @@ export default function Page() {
                 {/* Profile Picture Section */}
                 <div className="bg-white rounded-lg shadow p-6">
                   <h2 className="text-lg font-semibold mb-4">Profile Picture</h2>
-                  <div className="flex items-center gap-6">
-                    <div className="relative">
-                      <div className="w-32 h-32 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
-                        {imageLoading ? (
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500" />
-                        ) : profileImage ? (
-                          <Image
-                            src={profileImage.url}
-                            alt="Profile"
-                            width={128}
-                            height={128}
-                            className="object-cover w-full h-full"
-                          />
-                        ) : (
-                          <User size={48} className="text-gray-400" />
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block">
-                        <span className="sr-only">Choose profile photo</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="block w-full text-sm text-gray-500
-                            file:mr-4 file:py-2 file:px-4
-                            file:rounded-full file:border-0
-                            file:text-sm file:font-semibold
-                            file:bg-pink-50 file:text-pink-700
-                            hover:file:bg-pink-100"
-                        />
-                      </label>
-                      <p className="mt-2 text-sm text-gray-500">
-                        JPG, PNG or GIF up to 2MB
-                      </p>
-                    </div>
-                  </div>
+                  <ProfileImage 
+                    profileImage={profileImage}
+                    isLoading={imageLoading}
+                    size="lg"
+                    onImageUpload={handleFileChange}
+                    onImageRemove={handleRemoveProfilePicture}
+                    showUploadButton
+                  />
                 </div>
 
                 {/* Personal Information Section */}
@@ -678,9 +649,11 @@ export default function Page() {
       <div className="w-64 bg-white border-r">
         <div className="p-6">
           <div className="text-center mb-6">
-            <div className="w-24 h-24 rounded-full bg-pink-100 flex items-center justify-center mx-auto mb-4">
-              <User size={64} className="text-pink-500" />
-            </div>
+          <ProfileImage 
+            profileImage={profileImage}
+            isLoading={imageLoading}
+            size="md"
+          />
 
             <div className="flex items-center justify-center gap-2 mb-2">
               <p className="text-sm text-gray-600">

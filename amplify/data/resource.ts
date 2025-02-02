@@ -25,11 +25,7 @@ const schema = a.schema({
       state: a.string(),
       zipCode: a.string(),
       country: a.string(),
-      profileImage: a.string(),
-      points: a.integer(),
-      tier: a.string(),
-      discountCode: a.string(),
-      recentActivity: a.string().array()
+      profileImageKey: a.string()
     })
     .authorization((allow) => [allow.owner()])
 });
