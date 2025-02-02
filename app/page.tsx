@@ -4,8 +4,9 @@ import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
 import React, { useState, useEffect } from 'react';
 import { uploadData, getUrl, list } from 'aws-amplify/storage';
-import { Star, Link2, Heart, Share2, User, Play } from 'lucide-react';
+import { Star, Link2, Heart, Share2, User, Play, LogOut } from 'lucide-react';
 import { signOut, getCurrentUser } from 'aws-amplify/auth';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image'
 import { Amplify } from 'aws-amplify';
 import outputs from "@/amplify_outputs.json";
@@ -91,6 +92,7 @@ export default function Page() {
   // Add new state for user data
   const [userData, setUserData] = useState<User | null>(null);
   const client = generateClient<Schema>();
+  const router = useRouter();
     
   const [profileImage, setProfileImage] = useState<ProfileImage | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
@@ -103,6 +105,16 @@ export default function Page() {
     discountCode: "",
     recentActivity: []
   });
+
+  // Add the handleSignOut function
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.push('/'); // or wherever you want to redirect after sign out
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   // Add this function to handle image upload
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -700,6 +712,15 @@ export default function Page() {
                   <span>{item.label}</span>
                 </button>
               ))}
+            {/* Add Sign Out button at the bottom */}
+            <button
+              onClick={handleSignOut}
+              className="w-full flex items-center gap-3 p-3 rounded-lg transition
+                text-red-600 hover:bg-red-50"
+            >
+              <LogOut size={20} />
+              <span>Sign Out</span>
+            </button>
           </nav>
         </div>
       </div>
