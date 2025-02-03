@@ -133,7 +133,7 @@ export default function Page() {
   const handleVideoUploadComplete = async () => {
     try {
       await createCommunityPost(client, {
-        creator: userData?.username || 'unknown',
+        creator:  'unknown',
         caption: 'Hello WOrld',
         mediaUrl: 's3link' // get from uploader
       });
@@ -172,7 +172,7 @@ export default function Page() {
     }
   };
 
-  // Load user data on mount
+  /* Load user data on mount
   useEffect(() => {
     const loadUserData = async () => {
       try {
@@ -204,6 +204,7 @@ export default function Page() {
 
     loadUserData();
   });
+  */
 
   // Handle input changes
   const handleInputChange = (field: keyof User, value: string) => {
