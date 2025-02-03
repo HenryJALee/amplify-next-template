@@ -6,6 +6,8 @@ import React, { useState, useEffect } from 'react';
 import { Star, Link2, Heart, Share2, User, Play, LogOut } from 'lucide-react';
 import { signOut, getCurrentUser } from 'aws-amplify/auth';
 import { useRouter } from 'next/navigation';
+import { VideoUploader } from './components/VideoUploader';
+import { createCommunityPost } from './utils/community';
 import Image from 'next/image'
 import { Amplify } from 'aws-amplify';
 import outputs from "@/amplify_outputs.json";
@@ -18,7 +20,6 @@ import PinkPalm from '../public/icons/Pink-Palm.png';
 
 import { useProfileImage } from './hooks/useProfileImage';
 import { ProfileImage  } from './components/ProfileImage';
-
 
 
 Amplify.configure(outputs);
@@ -97,6 +98,7 @@ const DemoFeed: Post[] = [
 
 export default function Page() {
   // Add new states for user data
+  const [showVideoUploader, setShowVideoUploader] = useState(false);
   const [userData, setUserData] = useState<User | null>(null);
   const [usernameError, setUsernameError] = useState<string>('');
   const [formData, setFormData] = useState<Partial<User>>({});
@@ -126,6 +128,43 @@ export default function Page() {
       setUserData(updatedUser.data);
     }
   });
+
+  // Add this function to handle the upload completion
+  const handleVideoUploadComplete = async (videoData: {
+    url: string;
+    key: string;
+    thumbnail?: string;
+  }) => {
+    try {
+      await createCommunityPost(client, {
+        creator: userData?.username || 'unknown',
+        caption: 'Hello WOrld',
+        mediaUrl: 's3link' // get from uploader
+      });
+
+      // Add points for uploading content
+      const points = 50; // Adjust point value as needed
+      setAmbassador(prev => ({
+        ...prev,
+        points: prev.points + points,
+        recentActivity: [
+          {
+            type: 'Post',
+            platform: 'TikTok',
+            points: points,
+            date: new Date().toISOString().split('T')[0]
+          },
+          ...prev.recentActivity
+        ]
+      }));
+
+      setShowVideoUploader(false);
+    } catch (error) {
+      console.error('Error creating post:', error);
+      alert('Failed to create post. Please try again.');
+    }
+  };
+
 
   // Add the handleSignOut function
   const handleSignOut = async () => {
@@ -197,8 +236,6 @@ export default function Page() {
       return false;
     }
   };
-  
-  
 
   // Save changes with username validation
   const handleSaveChanges = async () => {
@@ -290,9 +327,7 @@ export default function Page() {
                 <h3 className="font-semibold">Recent Activity</h3>
                 <button 
                   className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 flex items-center gap-1"
-                  onClick={() => {
-                    console.log('Add content clicked')
-                  }}
+                  onClick={() => setShowVideoUploader(true)}
                 >
                   Add Content <span className="text-lg">+</span>
                 </button>
@@ -309,6 +344,12 @@ export default function Page() {
                 ))}
               </div>
             </div>
+          {showVideoUploader && (
+            <VideoUploader
+              onUploadComplete={handleVideoUploadComplete}
+              onClose={() => setShowVideoUploader(false)}
+            />
+          )}
           </div>
         );
 
@@ -580,7 +621,8 @@ export default function Page() {
               <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm bg-pink-500/80 px-4 py-2 rounded-full backdrop-blur-sm">
                 Scroll for more
               </div>
-            </div>
+
+              </div>
           );
         
 
@@ -655,5 +697,7 @@ export default function Page() {
         {renderContent()}
       </div>
     </div>
+  
+
   );
 }

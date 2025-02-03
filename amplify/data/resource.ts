@@ -27,7 +27,20 @@ const schema = a.schema({
       country: a.string(),
       profileImageKey: a.string()
     })
-    .authorization((allow) => [allow.owner()])
+    .authorization((allow) => [allow.owner()]),
+
+    CommunityPost: a.model({
+        id: a.id(),
+        creator: a.string(),
+        mediaType: a.enum(['video']),
+        mediaUrl: a.string(),
+        mediaKey: a.string(),
+        caption: a.string(),
+        likes: a.integer(),
+        points: a.integer(),
+        createdAt: a.string(),
+        userID: a.string()
+    }).authorization((allow) => [allow.owner()])
 });
 
 export type Schema = ClientSchema<typeof schema>;
