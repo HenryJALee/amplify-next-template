@@ -2,7 +2,7 @@
 
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Star, Link2, Heart, Share2, User, Play, LogOut } from 'lucide-react';
 import { signOut, getCurrentUser } from 'aws-amplify/auth';
 import { useRouter } from 'next/navigation';
