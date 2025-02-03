@@ -1,29 +1,45 @@
-import { generateClient } from 'aws-amplify/api';
 import { type Schema } from '@/amplify/data/resource';
+import { generateClient } from 'aws-amplify/api';
 
+// Define the input type
 type CreateCommunityPostInput = {
   creator: string;
   caption: string;
+  mediaUrl?: string;
+};
+
+// Define the return type
+type CommunityPostResponse = {
+  id: string;
+  creator: string;
+  caption: string;
   mediaUrl: string;
+  mediaKey: string;
+  mediaType: string;
+  likes: number;
+  points: number;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export const createCommunityPost = async (
   client: ReturnType<typeof generateClient<Schema>>,
   data: CreateCommunityPostInput
-): Promise<any> => {  // Changed return type to any temporarily
+): Promise<CommunityPostResponse> => {  
   try {
-    console.log('Dummy function - would create post with:', {
+    // Log the incoming data
+    console.log('Creating community post with:', {
       creator: data.creator,
       caption: data.caption,
-      videoFileName: data.mediaUrl
+      mediaUrl: data.mediaUrl || 'no-media'
     });
     
-    // Return dummy data
-    return {
-      id: 'dummy-id',
+    // Return mock data with the correct type
+    const mockResponse: CommunityPostResponse = {
+      id: `post-${Date.now()}`,
       creator: data.creator,
       caption: data.caption,
-      mediaUrl: 'dummy-url',
+      mediaUrl: data.mediaUrl || 'dummy-url',
       mediaKey: 'dummy-key',
       mediaType: 'video',
       likes: 0,
@@ -31,8 +47,10 @@ export const createCommunityPost = async (
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
+
+    return mockResponse;
   } catch (error) {
-    console.error('Error in dummy createCommunityPost:', error);
-    throw error;
+    console.error('Error in createCommunityPost:', error);
+    throw new Error('Failed to create community post');
   }
 };
