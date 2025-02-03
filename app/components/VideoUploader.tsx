@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Video, X } from 'lucide-react';
+import { Video, X } from 'lucide-react';
 import { FileUploader } from './FileUploader';
 import { uploadData, getUrl } from 'aws-amplify/storage';
 import { getCurrentUser } from 'aws-amplify/auth';
@@ -20,8 +20,7 @@ export const VideoUploader: React.FC<VideoUploaderProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [caption, setCaption] = useState('');
-  const [selectedPlatform, setSelectedPlatform] = useState<'tiktok' | 'instagram'>('tiktok');
-
+  
   const handleVideoUpload = async (file: File) => {
     try {
       setIsLoading(true);

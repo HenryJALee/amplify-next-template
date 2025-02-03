@@ -130,11 +130,7 @@ export default function Page() {
   });
 
   // Add this function to handle the upload completion
-  const handleVideoUploadComplete = async (videoData: {
-    url: string;
-    key: string;
-    thumbnail?: string;
-  }) => {
+  const handleVideoUploadComplete = async () => {
     try {
       await createCommunityPost(client, {
         creator: userData?.username || 'unknown',
