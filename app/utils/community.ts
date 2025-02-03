@@ -1,6 +1,5 @@
 import { generateClient } from 'aws-amplify/api';
 import { type Schema } from '@/amplify/data/resource';
-import { type CommunityPost } from '../types/community';
 
 type CreateCommunityPostInput = {
   creator: string;
