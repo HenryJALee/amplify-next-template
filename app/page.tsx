@@ -1,6 +1,7 @@
 'use client';
 
 import { generateClient } from "aws-amplify/data";
+import { DataStore } from '@aws-amplify/datastore';
 import type { Schema } from "@/amplify/data/resource";
 import React, { useState, useEffect } from 'react';
 import { Star, Link2, Heart, Share2, User, Play, LogOut } from 'lucide-react';
@@ -35,6 +36,7 @@ type Activity = {
 // Update User type
 type User = {
   id: string;
+  cognitoId: string | null;
   username?: string | null;  // Make username optional
   firstName?: string | null;
   lastName?: string | null;
@@ -177,16 +179,19 @@ export default function Page() {
     const loadUserData = async () => {
       try {
         const currentUser = await getCurrentUser();
+        console.log('Current user:', currentUser);
+
         const response = await client.models.User.list({
-          filter: { username: { eq: currentUser.username } }
+          filter: { cognitoId: { eq: currentUser.username } }
         });
         
+        console.log('User data response:', response);
         if (response.data && response.data.length > 0) {
           setUserData(response.data[0]);
           setFormData(response.data[0]); // Initialize form data
           setAmbassador({
-            name: currentUser.username || "Ambassador",
-            username: currentUser.username || "",
+            name: response.data[0].firstName || "Ambassador",
+            username: response.data[0].username || "",
             points: 750,
             tier: "Wonder Advocate",
             discountCode: `WONDER${currentUser.username.toUpperCase()}`,  // Changed from affiliateLink
@@ -201,9 +206,8 @@ export default function Page() {
         console.error('Error loading user data:', error);
       }
     };
-
     loadUserData();
-  });
+  }, []);
 
   // Handle input changes
   const handleInputChange = (field: keyof User, value: string) => {
@@ -220,13 +224,15 @@ export default function Page() {
   // Check if username is unique
   const isUsernameUnique = async (username: string): Promise<boolean> => {
     try {
+      const currentUser = await getCurrentUser();
       const response = await client.models.User.list({
-        filter: { username: { eq: username } }
-      });
+        filter: { username: { eq: username },
+                  cognitoId: { ne: currentUser?.username },
+      }});
       
       // If there are no users with this username, or the only user is the current user
       return !response.data?.length || 
-              (response.data.length === 1 && response.data[0].id === userData?.id);
+              (response.data.length === 1 && response.data[0].id === userData?.cognitoId);
     } catch (error) {
       console.error('Error checking username:', error);
       return false;
@@ -250,19 +256,40 @@ export default function Page() {
       }
 
       const currentUser = await getCurrentUser();
-      
-      if (!userData?.id) {
+
+      const currentUserData = await client.models.User.list({
+        filter: { cognitoId: { eq: currentUser.username } }
+      });
+
+      if (!currentUserData.data || currentUserData.data.length === 0) {
         // Create new user
         const newUser = await client.models.User.create({
-          cognitoId: currentUser.userId, // Store Cognito ID for reference
-          ...formData
+          cognitoId: currentUser.userId,
+          username: formData.username,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          streetAddress: formData.streetAddress,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode,
+          country: formData.country,
+          profileImageKey: currentUserData.data[0].profileImageKey
+
         });
         setUserData(newUser.data);
       } else {
-        // Update existing user
+        
         const updatedUser = await client.models.User.update({
-          id: userData.id,
-          ...formData
+          id: currentUserData.data[0].id, // This is required
+          username: formData.username,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          streetAddress: formData.streetAddress,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode,
+          country: formData.country,
+          profileImageKey: currentUserData.data[0].profileImageKey
         });
         setUserData(updatedUser.data);
       }
@@ -276,27 +303,27 @@ export default function Page() {
   const renderContent = () => {
     switch (activeSection) {
       case 'home':
-  return (
-    <div className="p-6 space-y-6">
-      {/* Welcome Message */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow" style={{ backgroundColor: '#FFF6F9' }}>
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-2xl text-pink-500">Welcome to our World</h3>
-            <img 
-              src="/icons/wonder-circles.png" 
-              alt="Wonderverse Icon" 
-              className="h-8 w-8"
-            />
-          </div>
-          <p className="text-lg mb-4">Whimsical Fragrance meets Clinically Effective and Sensory Friendly Bodycare...And this is where you come in!</p>
-          <div className="space-y-2 text-gray-600">
-            <p><span className="font-medium">TikTok:</span> @wonderverselab</p>
-            <p><span className="font-medium">Instagram:</span> @wonderverselab, @thewondysociety_</p>
-            <p><span className="font-medium">YouTube:</span> @thewonderverselabs</p>
-            <p><span className="font-medium">Lemon8:</span> @thewonderverse</p>
-          </div>
-        </div>
+        return (
+          <div className="p-6 space-y-6">
+            {/* Welcome Message */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white p-6 rounded-lg shadow" style={{ backgroundColor: '#FFF6F9' }}>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-2xl text-pink-500">Welcome to our World</h3>
+                  <img 
+                    src="/icons/wonder-circles.png" 
+                    alt="Wonderverse Icon" 
+                    className="h-8 w-8"
+                  />
+                </div>
+                <p className="text-lg mb-4">Whimsical Fragrance meets Clinically Effective and Sensory Friendly Bodycare...And this is where you come in!</p>
+                <div className="space-y-2 text-gray-600">
+                  <p><span className="font-medium">TikTok:</span> @wonderverselab</p>
+                  <p><span className="font-medium">Instagram:</span> @wonderverselab, @thewondysociety_</p>
+                  <p><span className="font-medium">YouTube:</span> @thewonderverselabs</p>
+                  <p><span className="font-medium">Lemon8:</span> @thewonderverse</p>
+                </div>
+              </div>
 
               <div className="bg-white p-6 rounded-lg shadow">
                 <h3 className="font-semibold mb-2">Discount Code</h3>
@@ -316,7 +343,7 @@ export default function Page() {
                 </div>
               </div>
             </div>
- 
+
             {/* Recent Activity */}
             <div className="bg-white p-6 rounded-lg shadow">
               <div className="flex justify-between items-center mb-4">
@@ -633,12 +660,13 @@ export default function Page() {
       <div className="w-64 bg-white border-r">
         <div className="p-6">
           <div className="text-center mb-6">
-          <ProfileImage 
-            profileImage={profileImage}
-            isLoading={imageLoading}
-            size="md"
-          />
-
+            <div className="inline-block">
+            <ProfileImage 
+              profileImage={profileImage}
+              isLoading={imageLoading}
+              size="md"
+            />
+          </div>
             <div className="flex items-center justify-center gap-2 mb-2">
               <p className="text-sm text-gray-600">
                 {formData.username ? `@${formData.username}` : 'No username set'}
