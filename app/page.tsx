@@ -366,16 +366,19 @@ export default function Page() {
                   <div className="flex items-center gap-8"> {/* Added flex container */}
                     <div> {/* Profile picture container */}
                       <DomeProfilePicture 
-                        imageUrl={profileImage}
-                        size="md"
-                        className="border-2 border-[#ff47b0]"
+                        profileImage={profileImage}
+                        isLoading={imageLoading}
+                        size="lg"
+                        onImageUpload={handleImageUpload}
+                        onImageRemove={handleRemoveProfilePicture}
+                        showUploadButton
                       /> 
                     </div>
                     <p className="text-pink-500 text-xl"> {/* Increased text size */}
                       Not to be dramatic, but your being here literally made our whole day sparkle! ⭐
                     </p>
                   </div>
-                  <div className="mt-4 flex gap-2">
+                 {/* <div className="mt-4 flex gap-2">
                     <button 
                       onClick={() => handleImageUpload}
                       className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600"
@@ -390,7 +393,7 @@ export default function Page() {
                         Remove Picture
                       </button>
                     )}
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Personal Information Section */}
@@ -709,9 +712,11 @@ export default function Page() {
           {/* Profile Section */}
           <div className="text-center mb-6 pl-10"> 
             <DomeProfilePicture 
-              imageUrl={profileImage}
-              size="md"
-              className="border-2 border-ff6dec-200"
+                profileImage={profileImage}
+                isLoading={imageLoading}
+                size="lg"
+                onImageUpload={handleImageUpload}
+                onImageRemove={handleRemoveProfilePicture}
             />
             
             <div className="flex items-center justify-center gap-2 mb-2">
