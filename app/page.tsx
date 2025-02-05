@@ -16,11 +16,12 @@ import BlueStar from '../public/icons/Blue-Star.png';
 import GreenStar from '../public/icons/Green-Star.png';
 import YellowStar from '../public/icons/Yellow-Star.png';
 import PinkPalm from '../public/icons/Pink-Palm.png';
-// Add these imports at the top of page.tsx
-
+import WONDERLOGO from '../public/icons/Wonderverse-logo-new.png';
+import MessageDashboard from './components/MessageDashboard';
+import DomeProfilePicture from './components/DomeProfilePicture';
 import { useProfileImage } from './hooks/useProfileImage';
-import { ProfileImage  } from './components/ProfileImage';
-
+import { ProfileImageType } from './hooks/useProfileImage';
+import WonderWheel from './components/WonderWheel';
 
 Amplify.configure(outputs);
 
@@ -105,7 +106,7 @@ export default function Page() {
   const client = generateClient<Schema>();
   const router = useRouter();
     
-  const [activeSection, setActiveSection] = useState<'home' | 'community' | 'messages' | 'profile'>('home');  
+  const [activeSection, setActiveSection] = useState<'home' | 'community' | 'messages' | 'profile' | 'game'>('home');  
   const [ambassador, setAmbassador] = useState<Ambassador>({
     name: "",
     username: "",
@@ -280,7 +281,7 @@ export default function Page() {
     <div className="p-6 space-y-6">
       {/* Welcome Message */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow" style={{ backgroundColor: '#FFF6F9' }}>
+        <div className="bg-white p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]" style={{ backgroundColor: '#FFF6F9' }}>
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-2xl text-pink-500">Welcome to our World</h3>
             <img 
@@ -298,7 +299,7 @@ export default function Page() {
           </div>
         </div>
 
-              <div className="bg-white p-6 rounded-lg shadow">
+              <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
                 <h3 className="font-semibold mb-2">Discount Code</h3>
                 <div className="flex gap-2">
                   <input
@@ -318,7 +319,7 @@ export default function Page() {
             </div>
  
             {/* Recent Activity */}
-            <div className="bg-white p-6 rounded-lg shadow">
+            <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold">Recent Activity</h3>
                 <button 
@@ -348,26 +349,52 @@ export default function Page() {
           )}
           </div>
         );
-
+        case 'messages':  // Add this new case
+        return (
+          <div className="h-screen bg-[#fff6f9]">
+            <MessageDashboard />
+          </div>
+        );
+      
         case 'profile':
           return (
             <div className="p-6 max-w-4xl mx-auto">
               <form className="space-y-8" onSubmit={(e) => e.preventDefault()}>
-                {/* Profile Picture Section */}
-                <div className="bg-white rounded-lg shadow p-6">
+                   {/* Profile Picture Section */}
+                <div className="bg-#fff6f9 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-6 mb-6">
                   <h2 className="text-lg font-semibold mb-4">Profile Picture</h2>
-                  <ProfileImage 
-                    profileImage={profileImage}
-                    isLoading={imageLoading}
-                    size="lg"
-                    onImageUpload={handleImageUpload}
-                    onImageRemove={handleRemoveProfilePicture}
-                    showUploadButton
-                  />
+                  <div className="flex items-center gap-8"> {/* Added flex container */}
+                    <div> {/* Profile picture container */}
+                      <DomeProfilePicture 
+                        imageUrl={profileImage}
+                        size="md"
+                        className="border-2 border-[#ff47b0]"
+                      /> 
+                    </div>
+                    <p className="text-pink-500 text-xl"> {/* Increased text size */}
+                      Not to be dramatic, but your being here literally made our whole day sparkle! ⭐
+                    </p>
+                  </div>
+                  <div className="mt-4 flex gap-2">
+                    <button 
+                      onClick={() => handleImageUpload}
+                      className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600"
+                    >
+                      Upload New Picture
+                    </button>
+                    {profileImage && (
+                      <button 
+                        onClick={handleRemoveProfilePicture}
+                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                      >
+                        Remove Picture
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Personal Information Section */}
-                <div className="bg-white rounded-lg shadow p-6">
+                <div className="bg-#fff6f9 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-6">
                 <h2 className="text-lg font-semibold mb-4">Personal Information</h2>
                   <div className="space-y-6">
                     {/* Username field */}
@@ -511,22 +538,57 @@ export default function Page() {
         case 'community':
           return (
             <div className="h-screen flex flex-col bg-pink-50">
-              {/* Ambassador Spotlight (Collapsed Version) */}
-              <div className="bg-gradient-to-r from-pink-500 to-purple-500 p-4">
-                <div className="flex items-center gap-4">
-                  <img 
-                    src="/api/placeholder/300/300"
-                    alt="vlogs.w.s.c"
-                    className="w-12 h-12 rounded-full border-2 border-white"
-                  />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-white font-semibold">@vlogs.w.s.c</h3>
-                      <span className="bg-white/20 px-2 py-0.5 rounded text-xs text-white">Featured Creator</span>
-                    </div>
-                  </div>
+            {/* Ambassador Spotlight (Expanded Version) */}
+            <div className="bg-[#ffsdec] p-6">
+            <div className="max-w-4xl mx-auto">
+            <h2 className="text-[#f9a4e1] text-xl font-bold mb-4 flex items-center gap-2">
+              Ambassador Spotlight
+              <img 
+                src="/icons/sparkle.png" 
+                alt="sparkle" 
+                className="w-6 h-6"
+              />
+            </h2>
+            <div className="flex items-start gap-6">
+            {/* Ambassador Image */}
+            <div className="flex-shrink-0">
+              <img 
+                src="/api/placeholder/300/300"
+                alt="vlogs.w.s.c"
+                className="w-24 h-24 rounded-full border-4 border-white shadow-lg"
+              />
+            </div>
+            
+            {/* Ambassador Info */}
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-[#f9a4e1] text-2xl font-semibold">@vlogs.w.s.c</h3>
+                <span className="bg-/20 px-3 py-1 rounded-full text-sm text-[#f9a4e1]">
+                  Ambassador Spotlight
+                </span>
+              </div>
+              
+              {/* Ambassador Stats */}
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="text-[#f9a4e1]">
+                  <div className="text-2xl font-bold">1.2K</div>
+                  <div className="text-sm opacity-80">Points</div>
+                </div>
+                <div className="text-[#f9a4e1]">
+                
                 </div>
               </div>
+          
+                  {/* Ambassador Bio */}
+                  <p className="text-[#f9a4e1]/90 text-sm">
+                    Creating content about sustainable beauty and sharing my Wonderverse journey! 
+                    Check out my latest reviews and tutorials. #WonderMaker #BeautyWithPurpose
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
 
               {/* Vertical Scrolling Feed */}
               <div className="flex-1 overflow-y-auto snap-y snap-mandatory">
@@ -621,24 +683,37 @@ export default function Page() {
               </div>
           );
         
-
+         case 'game':
+         return <WonderWheel />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="flex min-h-screen" style={{ backgroundColor: '#fff6f9' }}>
+    <div className="flex min-h-screen bg-wonder-pink">
       {/* Sidebar */}
-      <div className="w-64 bg-white border-r">
-        <div className="p-6">
-          <div className="text-center mb-6">
-          <ProfileImage 
-            profileImage={profileImage}
-            isLoading={imageLoading}
-            size="md"
-          />
-
+      <div className="w-72 bg-[#fff6f9]">  
+        <div className="flex flex-col">
+          {/* Logo Container */}
+          <div className="flex justify-center py-8 px-10"> 
+            <Image 
+              src={WONDERLOGO}
+              alt="Wonder Logo"
+              width={200}  // Reduced from 200
+              height={54}
+              priority
+            />
+          </div>
+  
+          {/* Profile Section */}
+          <div className="text-center mb-6 pl-10"> 
+            <DomeProfilePicture 
+              imageUrl={profileImage}
+              size="md"
+              className="border-2 border-ff6dec-200"
+            />
+            
             <div className="flex items-center justify-center gap-2 mb-2">
               <p className="text-sm text-gray-600">
                 {formData.username ? `@${formData.username}` : 'No username set'}
@@ -650,17 +725,18 @@ export default function Page() {
                 height={16}
               />
             </div>
-              <h2 className="font-bold text-lg">{ambassador.name}</h2>
-              <p className="text-sm text-gray-500">{ambassador.tier}</p>
+            <h2 className="font-bold text-lg">{ambassador.name}</h2>
+            <p className="text-sm text-gray-500">{ambassador.tier}</p>
           </div>
 
           {/* Navigation */}
-          <nav className="space-y-2">
+          <nav className="space-y-2 pl-9"> 
               {[
                 { icon: <Image src={PinkStar} alt="Dashboard" width={20} height={20} />, label: 'Dashboard', key: 'home' },
                 { icon: <Image src={BlueStar} alt="Community" width={20} height={20} />, label: 'Community', key: 'community' },
                 { icon: <Image src={GreenStar} alt="Messages" width={20} height={20} />, label: 'Messages', key: 'messages' },
-                { icon: <Image src={YellowStar} alt="Profile" width={20} height={20} />, label: 'Profile', key: 'profile' }
+                { icon: <Image src={YellowStar} alt="Profile" width={20} height={20} />, label: 'Profile', key: 'profile' }, // Add comma here
+                { icon: <Image src={PinkStar} alt="Game" width={20} height={20} />, label: 'Game', key: 'game' }    
               ].map((item) => (
                 <button
                   key={item.key}
@@ -675,6 +751,18 @@ export default function Page() {
                   <span>{item.label}</span>
                 </button>
               ))}
+              {/* Add Content Button */}
+              <button
+                onClick={() => setShowVideoUploader(true)}
+                className="w-full flex items-center gap-3 p-3 rounded-lg transition
+                bg-[#fff6f9] hover:bg-pink-500 text-pink-500 hover:text-white"
+              >
+                <span className="text-xl">+</span>
+                <span>Add Content</span>
+              </button>
+              
+              {/* Add Sign Out button at the bottom */}
+              
             {/* Add Sign Out button at the bottom */}
             <button
               onClick={handleSignOut}
