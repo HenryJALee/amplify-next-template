@@ -84,7 +84,7 @@ const DomeProfilePicture: React.FC<DomeProfilePictureProps> = ({
                       cx="200" 
                       cy="280" 
                       r="135" 
-                      fill="#ff6dec"  // new pink color
+                      fill="#ff47b0"  // new pink color
                     />
                     <g transform="translate(80, 165) scale(10)">
                       <path 

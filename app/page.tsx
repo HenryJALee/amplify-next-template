@@ -17,11 +17,21 @@ import GreenStar from '../public/icons/Green-Star.png';
 import YellowStar from '../public/icons/Yellow-Star.png';
 import PinkPalm from '../public/icons/Pink-Palm.png';
 import WONDERLOGO from '../public/icons/Wonderverse-logo-new.png';
+import WONDERLOGO_UPDATED from '../public/icons/Wonderverse-logo-update.png';
 import MessageDashboard from './components/MessageDashboard';
 import DomeProfilePicture from './components/DomeProfilePicture';
 import { useProfileImage } from './hooks/useProfileImage';
 import { ProfileImageType } from './hooks/useProfileImage';
-import WonderWheel from './components/WonderWheel';
+import AmbassadorSpotlight from './components/AmbassadorSpotlight';
+import WonderWheel from './components/WonderWheel';;
+import customheart from '../public/icons/custonheart.png';  // Note: fixing typo in filename if needed
+import customstar from '../public/icons/customstar.png';
+import type { ImageProps } from 'next/image';
+import { Menu, X } from 'lucide-react';
+import cursorIcon from '../public/icons/customstar.png'; 
+
+
+
 
 Amplify.configure(outputs);
 
@@ -66,6 +76,19 @@ type Post = {
   content: string;
   thumbnail?: string;
 };
+type AmbassadorUser = {
+  id: string;
+  username?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  streetAddress?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipCode?: string | null;
+  country?: string | null;
+  profileImageKey?: string | null;
+  tiktokUsername?: string | null;
+};
 
 // Add this type for profile image
 type ProfileImage = {
@@ -100,9 +123,12 @@ const DemoFeed: Post[] = [
 export default function Page() {
   // Add new states for user data
   const [showVideoUploader, setShowVideoUploader] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); 
   const [userData, setUserData] = useState<User | null>(null);
   const [usernameError, setUsernameError] = useState<string>('');
-  const [formData, setFormData] = useState<Partial<User>>({});
+  const [formData, setFormData] = useState<Partial<AmbassadorUser>>({
+    tiktokUsername: '',  // 
+});
   const client = generateClient<Schema>();
   const router = useRouter();
     
@@ -198,57 +224,58 @@ export default function Page() {
             ]
           });
         }
-      } catch (error) {
-        console.error('Error loading user data:', error);
-      }
-    };
+            } catch (error) {
+              console.error('Error loading user data:', error);
+            }
+          };
 
-    loadUserData();
-  });
+          loadUserData();
+        }, []); 
 
-  // Handle input changes
-  const handleInputChange = (field: keyof User, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-    // Clear username error when user types
-    if (field === 'username') {
-      setUsernameError('');
-    }
-  };
+        // Handle input changes
+        const handleInputChange = (field: keyof AmbassadorUser, value: string) => {
+          setFormData(prev => ({
+              ...prev,
+              [field]: value
+          }));
+          
+          // Keep the username error reset for username input
+          if (field === 'username') {
+              setUsernameError('');
+          }
+      };
 
-  // Check if username is unique
-  const isUsernameUnique = async (username: string): Promise<boolean> => {
-    try {
-      const response = await client.models.User.list({
-        filter: { username: { eq: username } }
-      });
-      
-      // If there are no users with this username, or the only user is the current user
-      return !response.data?.length || 
-              (response.data.length === 1 && response.data[0].id === userData?.id);
-    } catch (error) {
-      console.error('Error checking username:', error);
-      return false;
-    }
-  };
+        // Check if username is unique
+        const isUsernameUnique = async (username: string): Promise<boolean> => {
+          try {
+            const response = await client.models.User.list({
+              filter: { username: { eq: username } }
+            });
+            
+            // If there are no users with this username, or the only user is the current user
+            return !response.data?.length || 
+                    (response.data.length === 1 && response.data[0].id === userData?.id);
+          } catch (error) {
+            console.error('Error checking username:', error);
+            return false;
+          }
+        };
 
-  // Save changes with username validation
-  const handleSaveChanges = async () => {
-    try {
-      // Check if username is provided
-      if (!formData.username) {
-        setUsernameError('Username is required');
-        return;
-      }
+        // Save changes with username validation
+        const handleSaveChanges = async () => {
+          try {
+            // Check if username is provided
+            if (!formData.username) {
+              setUsernameError('Username is required');
+              return;
+            }
 
-      // Check username uniqueness
-      const isUnique = await isUsernameUnique(formData.username);
-      if (!isUnique) {
-        setUsernameError('This username is already taken');
-        return;
-      }
+        // Check username uniqueness
+        const isUnique = await isUsernameUnique(formData.username);
+        if (!isUnique) {
+          setUsernameError('This username is already taken');
+          return;
+        }
 
       const currentUser = await getCurrentUser();
       
@@ -274,30 +301,30 @@ export default function Page() {
     }
   };
   
-  const renderContent = () => {
-    switch (activeSection) {
-      case 'home':
-  return (
-    <div className="p-6 space-y-6">
-      {/* Welcome Message */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]" style={{ backgroundColor: '#FFF6F9' }}>
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-2xl text-pink-500">Welcome to our World</h3>
-            <img 
-              src="/icons/wonder-circles.png" 
-              alt="Wonderverse Icon" 
-              className="h-8 w-8"
-            />
-          </div>
-          <p className="text-lg mb-4">Whimsical Fragrance meets Clinically Effective and Sensory Friendly Bodycare...And this is where you come in!</p>
-          <div className="space-y-2 text-gray-600">
-            <p><span className="font-medium">TikTok:</span> @wonderverselab</p>
-            <p><span className="font-medium">Instagram:</span> @wonderverselab, @thewondysociety_</p>
-            <p><span className="font-medium">YouTube:</span> @thewonderverselabs</p>
-            <p><span className="font-medium">Lemon8:</span> @thewonderverse</p>
-          </div>
-        </div>
+          const renderContent = () => {
+            switch (activeSection) {
+              case 'home':
+          return (
+            <div className="p-6 space-y-6">
+              {/* Welcome Message */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]" style={{ backgroundColor: '#FFF6F9' }}>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-2xl text-[#ff47b0]">Welcome to our World</h3>
+                    <img 
+                      src="/icons/wonder-circles.png" 
+                      alt="Wonderverse Icon" 
+                      className="h-8 w-8"
+                    />
+                  </div>
+                  <p className="text-[#ff47b0]">Whimsical Fragrance meets Clinically Effective and Sensory Friendly Bodycare...And this is where you come in!</p>
+                  <div className="space-y-2 text-'#ff47b0'">
+                    <p><span className="font-medium">TikTok:</span> @wonderverselab</p>
+                    <p><span className="font-medium">Instagram:</span> @wonderverselab, @thewondysociety_</p>
+                    <p><span className="font-medium">YouTube:</span> @thewonderverselabs</p>
+                    <p><span className="font-medium">Lemon8:</span> @thewonderverse</p>
+                  </div>
+                </div>
 
               <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
                 <h3 className="font-semibold mb-2">Discount Code</h3>
@@ -315,9 +342,50 @@ export default function Page() {
                     <Link2 size={20} />
                   </button>
                 </div>
+                <div className="mt-4 flex justify-end">
+                  <a 
+                      href="https://www.thewonderverselabs.com" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-all text-sm flex items-center gap-2 shadow-md"
+                  >
+                      ✨ Wonderverse
+                  </a>
+                </div>      
               </div>
             </div>
- 
+            {/* TikTok Submission Section */}
+            <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
+                <h3 className="font-semibold text-lg mb-2 text-[#ff47b0]">Submit Your TikTok Content</h3>
+                
+            {/* TikTok Username Input */}
+            <div className="flex gap-2 mb-4">
+            <input
+            type="text"
+            placeholder="Enter your TikTok username"
+            value={formData?.tiktokUsername || ''}
+            onChange={(e) => handleInputChange('tiktokUsername', e.target.value)}
+            className="flex-1 p-2 border rounded"
+        />
+        <button 
+            onClick={() => alert('TikTok Username Saved!')}
+            className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-all text-sm shadow-md"
+        >
+            Save
+        </button>
+    </div>
+
+    {/* Video Upload Button */}
+    <div className="flex justify-end">
+        <button 
+            onClick={() => setShowVideoUploader(true)}
+            className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-all text-sm shadow-md flex items-center gap-2"
+        >
+            📹 Upload TikTok Post
+        </button>
+    </div>
+</div>
+
             {/* Recent Activity */}
             <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
               <div className="flex justify-between items-center mb-4">
@@ -361,14 +429,13 @@ export default function Page() {
             <div className="p-6 max-w-4xl mx-auto">
               <form className="space-y-8" onSubmit={(e) => e.preventDefault()}>
                    {/* Profile Picture Section */}
-                <div className="bg-#fff6f9 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-6 mb-6">
-                  <h2 className="text-lg font-semibold mb-4">Profile Picture</h2>
-                  <div className="flex items-center gap-8"> {/* Added flex container */}
+                <div className="bg-#fff6f9 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-14 mb-4">
+                  <div className="flex items-center gap-2"> {/* Added flex container */}
                     <div> {/* Profile picture container */}
                       <DomeProfilePicture 
                         profileImage={profileImage}
                         isLoading={imageLoading}
-                        size="lg"
+                        size="md"
                         onImageUpload={handleImageUpload}
                         onImageRemove={handleRemoveProfilePicture}
                         showUploadButton
@@ -378,22 +445,6 @@ export default function Page() {
                       Not to be dramatic, but your being here literally made our whole day sparkle! ⭐
                     </p>
                   </div>
-                 {/* <div className="mt-4 flex gap-2">
-                    <button 
-                      onClick={() => handleImageUpload}
-                      className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600"
-                    >
-                      Upload New Picture
-                    </button>
-                    {profileImage && (
-                      <button 
-                        onClick={handleRemoveProfilePicture}
-                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-                      >
-                        Remove Picture
-                      </button>
-                    )}
-                  </div> */}
                 </div>
 
                 {/* Personal Information Section */}
@@ -421,7 +472,7 @@ export default function Page() {
                   </div>
                 </div>
 
-                {/* Fist and Last Names */}
+                {/* First and Last Names */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -538,59 +589,10 @@ export default function Page() {
             </div>
           );
 
-        case 'community':
+          case 'community':
           return (
             <div className="h-screen flex flex-col bg-pink-50">
-            {/* Ambassador Spotlight (Expanded Version) */}
-            <div className="bg-[#ffsdec] p-6">
-            <div className="max-w-4xl mx-auto">
-            <h2 className="text-[#f9a4e1] text-xl font-bold mb-4 flex items-center gap-2">
-              Ambassador Spotlight
-              <img 
-                src="/icons/sparkle.png" 
-                alt="sparkle" 
-                className="w-6 h-6"
-              />
-            </h2>
-            <div className="flex items-start gap-6">
-            {/* Ambassador Image */}
-            <div className="flex-shrink-0">
-              <img 
-                src="/api/placeholder/300/300"
-                alt="vlogs.w.s.c"
-                className="w-24 h-24 rounded-full border-4 border-white shadow-lg"
-              />
-            </div>
-            
-            {/* Ambassador Info */}
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h3 className="text-[#f9a4e1] text-2xl font-semibold">@vlogs.w.s.c</h3>
-                <span className="bg-/20 px-3 py-1 rounded-full text-sm text-[#f9a4e1]">
-                  Ambassador Spotlight
-                </span>
-              </div>
-              
-              {/* Ambassador Stats */}
-              <div className="grid grid-cols-3 gap-4 mb-4">
-                <div className="text-[#f9a4e1]">
-                  <div className="text-2xl font-bold">1.2K</div>
-                  <div className="text-sm opacity-80">Points</div>
-                </div>
-                <div className="text-[#f9a4e1]">
-                
-                </div>
-              </div>
-          
-                  {/* Ambassador Bio */}
-                  <p className="text-[#f9a4e1]/90 text-sm">
-                    Creating content about sustainable beauty and sharing my Wonderverse journey! 
-                    Check out my latest reviews and tutorials. #WonderMaker #BeautyWithPurpose
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+              <AmbassadorSpotlight />
 
 
               {/* Vertical Scrolling Feed */}
@@ -647,32 +649,44 @@ export default function Page() {
                       </div>
 
                       {/* Interaction Buttons */}
-                      <div className="absolute right-4 bottom-20 flex flex-col gap-4 items-center">
-                        <button className="flex flex-col items-center group transition-all">
-                          <div className="w-12 h-12 bg-pink-500/80 hover:bg-pink-500 rounded-full flex items-center justify-center backdrop-blur-sm">
-                            <Heart size={24} className="text-white" />
-                          </div>
-                          <span className="text-white text-sm mt-1 group-hover:scale-110 transition-transform">
-                            {post.likes}
-                          </span>
-                        </button>
-
-                        <button className="flex flex-col items-center group transition-all">
-                          <div className="w-12 h-12 bg-pink-500/80 hover:bg-pink-500 rounded-full flex items-center justify-center backdrop-blur-sm">
-                            <Star size={24} className="text-white" />
-                          </div>
-                          <span className="text-white text-sm mt-1 group-hover:scale-110 transition-transform">
-                            +{post.points}
-                          </span>
-                        </button>
-
-                        <div className="w-12 h-12 bg-pink-500/80 hover:bg-pink-500 rounded-full flex items-center justify-center backdrop-blur-sm">
-                          <Share2 
-                            className="text-white"
-                            size={24}
-                          />
-                        </div>
+                  <div className="absolute right-4 bottom-20 flex flex-col gap-4 items-center">
+                    <button className="flex flex-col items-center group transition-all">
+                      <div className="w-12 h-12 bg-pink-500/80 hover:bg-pink-500 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <Image 
+                          src={customheart}
+                          alt="Like"
+                          width={24}
+                          height={24}
+                          className="text-white"
+                        />
                       </div>
+                      <span className="text-white text-sm mt-1 group-hover:scale-110 transition-transform">
+                        {post.likes}
+                      </span>
+                    </button>
+
+                    <button className="flex flex-col items-center group transition-all">
+                      <div className="w-12 h-12 bg-pink-500/80 hover:bg-pink-500 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <Image 
+                          src={customstar}
+                          alt="Points"
+                          width={24}
+                          height={24}
+                          className="text-white"
+                        />
+                      </div>
+                      <span className="text-white text-sm mt-1 group-hover:scale-110 transition-transform">
+                        +{post.points}
+                      </span>
+                    </button>
+
+                    <div className="w-12 h-12 bg-pink-500/80 hover:bg-pink-500 rounded-full flex items-center justify-center backdrop-blur-sm">
+                      <Share2 
+                        className="text-white"
+                        size={24}
+                      />
+                    </div>
+                  </div>
                     </div>
                   </div>
                 ))}
@@ -686,9 +700,16 @@ export default function Page() {
               </div>
           );
         
-         case 'game':
-         return <WonderWheel />;
-      default:
+          case 'game':
+        return (
+          <div className="w-full flex flex-col items-center bg-[#FFF6F9] p-4">
+      {/* Wonder Wheel */}
+        <WonderWheel />
+
+      {/* Scent Quiz Below */}
+    </div>
+  );       
+        default:
         return null;
     }
   };
@@ -699,10 +720,10 @@ export default function Page() {
       <div className="w-72 bg-[#fff6f9]">  
         <div className="flex flex-col">
           {/* Logo Container */}
-          <div className="flex justify-center py-8 px-10"> 
+          <div className="flex justify-center py-18 px-10"> 
             <Image 
-              src={WONDERLOGO}
-              alt="Wonder Logo"
+              src={WONDERLOGO_UPDATED}
+              alt="Wonder Logo Updated"
               width={200}  // Reduced from 200
               height={54}
               priority
@@ -710,39 +731,28 @@ export default function Page() {
           </div>
   
           {/* Profile Section */}
-          <div className="text-center mb-6 pl-10"> 
+          <div className="text-center mb-6 pl-4"> 
             <DomeProfilePicture 
-                profileImage={profileImage}
-                isLoading={imageLoading}
-                size="lg"
-                onImageUpload={handleImageUpload}
-                onImageRemove={handleRemoveProfilePicture}
+                    profileImage={profileImage}
+                    isLoading={imageLoading}
+                    size="lg"
+                    onImageUpload={handleImageUpload}
+                    onImageRemove={handleRemoveProfilePicture}
             />
-            
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <p className="text-sm text-gray-600">
-                {formData.username ? `@${formData.username}` : 'No username set'}
-              </p>
-              <Image 
-                src={PinkPalm} 
-                alt="Palm Tree" 
-                width={16} 
-                height={16}
-              />
-            </div>
-            <h2 className="font-bold text-lg">{ambassador.name}</h2>
+            <h2 className="font-bold text-lg">{userData?.username || ambassador.name}</h2>
             <p className="text-sm text-gray-500">{ambassador.tier}</p>
           </div>
 
           {/* Navigation */}
-          <nav className="space-y-2 pl-9"> 
+          <nav className="space-y-3 pl-4">
               {[
-                { icon: <Image src={PinkStar} alt="Dashboard" width={20} height={20} />, label: 'Dashboard', key: 'home' },
-                { icon: <Image src={BlueStar} alt="Community" width={20} height={20} />, label: 'Community', key: 'community' },
-                { icon: <Image src={GreenStar} alt="Messages" width={20} height={20} />, label: 'Messages', key: 'messages' },
-                { icon: <Image src={YellowStar} alt="Profile" width={20} height={20} />, label: 'Profile', key: 'profile' }, // Add comma here
-                { icon: <Image src={PinkStar} alt="Game" width={20} height={20} />, label: 'Game', key: 'game' }    
-              ].map((item) => (
+                 { icon: <Image src={PinkStar} alt="Dashboard" width={20} height={20} />, label: 'Dashboard', key: 'home' },
+                 { icon: <Image src={BlueStar} alt="Community" width={20} height={20} />, label: 'Community', key: 'community' },
+                 { icon: <Image src={GreenStar} alt="Community Updates" width={20} height={20} />, label: 'Community Updates', key: 'messages' },
+                 { icon: <Image src={YellowStar} alt="Profile" width={20} height={20} />, label: 'Profile', key: 'profile' },
+                 { icon: <Image src={PinkStar} alt="Game" width={20} height={20} />, label: 'Game', key: 'game' }
+               ]
+             .map((item) => (
                 <button
                   key={item.key}
                   onClick={() => setActiveSection(item.key as typeof activeSection)}
@@ -765,8 +775,6 @@ export default function Page() {
                 <span className="text-xl">+</span>
                 <span>Add Content</span>
               </button>
-              
-              {/* Add Sign Out button at the bottom */}
               
             {/* Add Sign Out button at the bottom */}
             <button
