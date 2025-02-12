@@ -17,10 +17,21 @@ import BlueStar from '../public/icons/Blue-Star.png';
 import GreenStar from '../public/icons/Green-Star.png';
 import YellowStar from '../public/icons/Yellow-Star.png';
 import PinkPalm from '../public/icons/Pink-Palm.png';
-// Add these imports at the top of page.tsx
-
+import WONDERLOGO from '../public/icons/Wonderverse-logo-new.png';
+import WONDERLOGO_UPDATED from '../public/icons/Wonderverse-logo-update.png';
+import MessageDashboard from './components/MessageDashboard';
+import DomeProfilePicture from './components/DomeProfilePicture';
 import { useProfileImage } from './hooks/useProfileImage';
-import { ProfileImage  } from './components/ProfileImage';
+import { ProfileImageType } from './hooks/useProfileImage';
+import AmbassadorSpotlight from './components/AmbassadorSpotlight';
+import WonderWheel from './components/WonderWheel';;
+import customheart from '../public/icons/custonheart.png';  // Note: fixing typo in filename if needed
+import customstar from '../public/icons/customstar.png';
+import type { ImageProps } from 'next/image';
+import { Menu, X } from 'lucide-react';
+import cursorIcon from '../public/icons/customstar.png'; 
+
+
 
 
 Amplify.configure(outputs);
@@ -67,6 +78,19 @@ type Post = {
   content: string;
   thumbnail?: string;
 };
+type AmbassadorUser = {
+  id: string;
+  username?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  streetAddress?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipCode?: string | null;
+  country?: string | null;
+  profileImageKey?: string | null;
+  tiktokUsername?: string | null;
+};
 
 // Add this type for profile image
 type ProfileImage = {
@@ -101,13 +125,16 @@ const DemoFeed: Post[] = [
 export default function Page() {
   // Add new states for user data
   const [showVideoUploader, setShowVideoUploader] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); 
   const [userData, setUserData] = useState<User | null>(null);
   const [usernameError, setUsernameError] = useState<string>('');
-  const [formData, setFormData] = useState<Partial<User>>({});
+  const [formData, setFormData] = useState<Partial<AmbassadorUser>>({
+    tiktokUsername: '',  // 
+});
   const client = generateClient<Schema>();
   const router = useRouter();
     
-  const [activeSection, setActiveSection] = useState<'home' | 'community' | 'messages' | 'profile'>('home');  
+  const [activeSection, setActiveSection] = useState<'home' | 'community' | 'messages' | 'profile' | 'game'>('home');  
   const [ambassador, setAmbassador] = useState<Ambassador>({
     name: "",
     username: "",
@@ -254,7 +281,6 @@ export default function Page() {
         setUsernameError('This username is already taken');
         return;
       }
-
       const currentUser = await getCurrentUser();
 
       const currentUserData = await client.models.User.list({
@@ -301,31 +327,30 @@ export default function Page() {
   };
   
   const renderContent = () => {
-    switch (activeSection) {
-      case 'home':
-        return (
-          <div className="p-6 space-y-6">
-            {/* Welcome Message */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white p-6 rounded-lg shadow" style={{ backgroundColor: '#FFF6F9' }}>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-2xl text-pink-500">Welcome to our World</h3>
-                  <img 
-                    src="/icons/wonder-circles.png" 
-                    alt="Wonderverse Icon" 
-                    className="h-8 w-8"
-                  />
+     switch (activeSection) {
+       case 'home':
+          return (
+            <div className="p-6 space-y-6">
+              {/* Welcome Message */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]" style={{ backgroundColor: '#FFF6F9' }}>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-2xl text-[#ff47b0]">Welcome to our World</h3>
+                    <img 
+                      src="/icons/wonder-circles.png" 
+                      alt="Wonderverse Icon" 
+                      className="h-8 w-8"
+                    />
+                  </div>
+                  <p className="text-[#ff47b0]">Whimsical Fragrance meets Clinically Effective and Sensory Friendly Bodycare...And this is where you come in!</p>
+                  <div className="space-y-2 text-'#ff47b0'">
+                    <p><span className="font-medium">TikTok:</span> @wonderverselab</p>
+                    <p><span className="font-medium">Instagram:</span> @wonderverselab, @thewondysociety_</p>
+                    <p><span className="font-medium">YouTube:</span> @thewonderverselabs</p>
+                    <p><span className="font-medium">Lemon8:</span> @thewonderverse</p>
+                  </div>
                 </div>
-                <p className="text-lg mb-4">Whimsical Fragrance meets Clinically Effective and Sensory Friendly Bodycare...And this is where you come in!</p>
-                <div className="space-y-2 text-gray-600">
-                  <p><span className="font-medium">TikTok:</span> @wonderverselab</p>
-                  <p><span className="font-medium">Instagram:</span> @wonderverselab, @thewondysociety_</p>
-                  <p><span className="font-medium">YouTube:</span> @thewonderverselabs</p>
-                  <p><span className="font-medium">Lemon8:</span> @thewonderverse</p>
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow">
+              <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
                 <h3 className="font-semibold mb-2">Discount Code</h3>
                 <div className="flex gap-2">
                   <input
@@ -341,11 +366,21 @@ export default function Page() {
                     <Link2 size={20} />
                   </button>
                 </div>
+                <div className="mt-4 flex justify-end">
+                  <a 
+                      href="https://www.thewonderverselabs.com" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-all text-sm flex items-center gap-2 shadow-md"
+                  >
+                      ✨ Wonderverse
+                  </a>
+                </div>      
               </div>
             </div>
 
             {/* Recent Activity */}
-            <div className="bg-white p-6 rounded-lg shadow">
+            <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold">Recent Activity</h3>
                 <button 
@@ -375,26 +410,38 @@ export default function Page() {
           )}
           </div>
         );
-
+        case 'messages':  // Add this new case
+        return (
+          <div className="h-screen bg-[#fff6f9]">
+            <MessageDashboard />
+          </div>
+        );
+      
         case 'profile':
           return (
             <div className="p-6 max-w-4xl mx-auto">
               <form className="space-y-8" onSubmit={(e) => e.preventDefault()}>
-                {/* Profile Picture Section */}
-                <div className="bg-white rounded-lg shadow p-6">
-                  <h2 className="text-lg font-semibold mb-4">Profile Picture</h2>
-                  <ProfileImage 
-                    profileImage={profileImage}
-                    isLoading={imageLoading}
-                    size="lg"
-                    onImageUpload={handleImageUpload}
-                    onImageRemove={handleRemoveProfilePicture}
-                    showUploadButton
-                  />
+                   {/* Profile Picture Section */}
+                <div className="bg-#fff6f9 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-14 mb-4">
+                  <div className="flex items-center gap-2"> {/* Added flex container */}
+                    <div> {/* Profile picture container */}
+                      <DomeProfilePicture 
+                        profileImage={profileImage}
+                        isLoading={imageLoading}
+                        size="md"
+                        onImageUpload={handleImageUpload}
+                        onImageRemove={handleRemoveProfilePicture}
+                        showUploadButton
+                      /> 
+                    </div>
+                    <p className="text-pink-500 text-xl"> {/* Increased text size */}
+                      Not to be dramatic, but your being here literally made our whole day sparkle! ⭐
+                    </p>
+                  </div>
                 </div>
 
                 {/* Personal Information Section */}
-                <div className="bg-white rounded-lg shadow p-6">
+                <div className="bg-#fff6f9 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-6">
                 <h2 className="text-lg font-semibold mb-4">Personal Information</h2>
                   <div className="space-y-6">
                     {/* Username field */}
@@ -418,7 +465,7 @@ export default function Page() {
                   </div>
                 </div>
 
-                {/* Fist and Last Names */}
+                {/* First and Last Names */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -535,25 +582,11 @@ export default function Page() {
             </div>
           );
 
-        case 'community':
+          case 'community':
           return (
             <div className="h-screen flex flex-col bg-pink-50">
-              {/* Ambassador Spotlight (Collapsed Version) */}
-              <div className="bg-gradient-to-r from-pink-500 to-purple-500 p-4">
-                <div className="flex items-center gap-4">
-                  <img 
-                    src="/api/placeholder/300/300"
-                    alt="vlogs.w.s.c"
-                    className="w-12 h-12 rounded-full border-2 border-white"
-                  />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-white font-semibold">@vlogs.w.s.c</h3>
-                      <span className="bg-white/20 px-2 py-0.5 rounded text-xs text-white">Featured Creator</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <AmbassadorSpotlight />
+
 
               {/* Vertical Scrolling Feed */}
               <div className="flex-1 overflow-y-auto snap-y snap-mandatory">
@@ -609,32 +642,44 @@ export default function Page() {
                       </div>
 
                       {/* Interaction Buttons */}
-                      <div className="absolute right-4 bottom-20 flex flex-col gap-4 items-center">
-                        <button className="flex flex-col items-center group transition-all">
-                          <div className="w-12 h-12 bg-pink-500/80 hover:bg-pink-500 rounded-full flex items-center justify-center backdrop-blur-sm">
-                            <Heart size={24} className="text-white" />
-                          </div>
-                          <span className="text-white text-sm mt-1 group-hover:scale-110 transition-transform">
-                            {post.likes}
-                          </span>
-                        </button>
-
-                        <button className="flex flex-col items-center group transition-all">
-                          <div className="w-12 h-12 bg-pink-500/80 hover:bg-pink-500 rounded-full flex items-center justify-center backdrop-blur-sm">
-                            <Star size={24} className="text-white" />
-                          </div>
-                          <span className="text-white text-sm mt-1 group-hover:scale-110 transition-transform">
-                            +{post.points}
-                          </span>
-                        </button>
-
-                        <div className="w-12 h-12 bg-pink-500/80 hover:bg-pink-500 rounded-full flex items-center justify-center backdrop-blur-sm">
-                          <Share2 
-                            className="text-white"
-                            size={24}
-                          />
-                        </div>
+                  <div className="absolute right-4 bottom-20 flex flex-col gap-4 items-center">
+                    <button className="flex flex-col items-center group transition-all">
+                      <div className="w-12 h-12 bg-pink-500/80 hover:bg-pink-500 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <Image 
+                          src={customheart}
+                          alt="Like"
+                          width={24}
+                          height={24}
+                          className="text-white"
+                        />
                       </div>
+                      <span className="text-white text-sm mt-1 group-hover:scale-110 transition-transform">
+                        {post.likes}
+                      </span>
+                    </button>
+
+                    <button className="flex flex-col items-center group transition-all">
+                      <div className="w-12 h-12 bg-pink-500/80 hover:bg-pink-500 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <Image 
+                          src={customstar}
+                          alt="Points"
+                          width={24}
+                          height={24}
+                          className="text-white"
+                        />
+                      </div>
+                      <span className="text-white text-sm mt-1 group-hover:scale-110 transition-transform">
+                        +{post.points}
+                      </span>
+                    </button>
+
+                    <div className="w-12 h-12 bg-pink-500/80 hover:bg-pink-500 rounded-full flex items-center justify-center backdrop-blur-sm">
+                      <Share2 
+                        className="text-white"
+                        size={24}
+                      />
+                    </div>
+                  </div>
                     </div>
                   </div>
                 ))}
@@ -648,48 +693,59 @@ export default function Page() {
               </div>
           );
         
+          case 'game':
+        return (
+          <div className="w-full flex flex-col items-center bg-[#FFF6F9] p-4">
+      {/* Wonder Wheel */}
+        <WonderWheel />
 
-      default:
+      {/* Scent Quiz Below */}
+    </div>
+  );       
+        default:
         return null;
     }
   };
 
   return (
-    <div className="flex min-h-screen" style={{ backgroundColor: '#fff6f9' }}>
+    <div className="flex min-h-screen bg-wonder-pink">
       {/* Sidebar */}
-      <div className="w-64 bg-white border-r">
-        <div className="p-6">
-          <div className="text-center mb-6">
-            <div className="inline-block">
-            <ProfileImage 
-              profileImage={profileImage}
-              isLoading={imageLoading}
-              size="md"
+      <div className="w-72 bg-[#fff6f9]">  
+        <div className="flex flex-col">
+          {/* Logo Container */}
+          <div className="flex justify-center py-18 px-10"> 
+            <Image 
+              src={WONDERLOGO_UPDATED}
+              alt="Wonder Logo Updated"
+              width={200}  // Reduced from 200
+              height={54}
+              priority
             />
           </div>
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <p className="text-sm text-gray-600">
-                {formData.username ? `@${formData.username}` : 'No username set'}
-              </p>
-              <Image 
-                src={PinkPalm} 
-                alt="Palm Tree" 
-                width={16} 
-                height={16}
-              />
-            </div>
-              <h2 className="font-bold text-lg">{ambassador.name}</h2>
-              <p className="text-sm text-gray-500">{ambassador.tier}</p>
+  
+          {/* Profile Section */}
+          <div className="text-center mb-6 pl-4"> 
+            <DomeProfilePicture 
+                    profileImage={profileImage}
+                    isLoading={imageLoading}
+                    size="lg"
+                    onImageUpload={handleImageUpload}
+                    onImageRemove={handleRemoveProfilePicture}
+            />
+            <h2 className="font-bold text-lg">{userData?.username || ambassador.name}</h2>
+            <p className="text-sm text-gray-500">{ambassador.tier}</p>
           </div>
 
           {/* Navigation */}
-          <nav className="space-y-2">
+          <nav className="space-y-3 pl-4">
               {[
-                { icon: <Image src={PinkStar} alt="Dashboard" width={20} height={20} />, label: 'Dashboard', key: 'home' },
-                { icon: <Image src={BlueStar} alt="Community" width={20} height={20} />, label: 'Community', key: 'community' },
-                { icon: <Image src={GreenStar} alt="Messages" width={20} height={20} />, label: 'Messages', key: 'messages' },
-                { icon: <Image src={YellowStar} alt="Profile" width={20} height={20} />, label: 'Profile', key: 'profile' }
-              ].map((item) => (
+                 { icon: <Image src={PinkStar} alt="Dashboard" width={20} height={20} />, label: 'Dashboard', key: 'home' },
+                 { icon: <Image src={BlueStar} alt="Community" width={20} height={20} />, label: 'Community', key: 'community' },
+                 { icon: <Image src={GreenStar} alt="Community Updates" width={20} height={20} />, label: 'Community Updates', key: 'messages' },
+                 { icon: <Image src={YellowStar} alt="Profile" width={20} height={20} />, label: 'Profile', key: 'profile' },
+                 { icon: <Image src={PinkStar} alt="Game" width={20} height={20} />, label: 'Game', key: 'game' }
+               ]
+             .map((item) => (
                 <button
                   key={item.key}
                   onClick={() => setActiveSection(item.key as typeof activeSection)}
@@ -703,6 +759,16 @@ export default function Page() {
                   <span>{item.label}</span>
                 </button>
               ))}
+              {/* Add Content Button */}
+              <button
+                onClick={() => setShowVideoUploader(true)}
+                className="w-full flex items-center gap-3 p-3 rounded-lg transition
+                bg-[#fff6f9] hover:bg-pink-500 text-pink-500 hover:text-white"
+              >
+                <span className="text-xl">+</span>
+                <span>Add Content</span>
+              </button>
+              
             {/* Add Sign Out button at the bottom */}
             <button
               onClick={handleSignOut}
