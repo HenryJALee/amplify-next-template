@@ -5,13 +5,10 @@ import { uploadData, getUrl } from 'aws-amplify/storage';
 import { getCurrentUser } from 'aws-amplify/auth';
 
 interface VideoUploaderProps {
-  onUploadComplete: (videoData: {
-    url: string;
-    key: string;
-    thumbnail?: string;
-  }) => void;
+  onUploadComplete: (key: string, url: string) => void;
   onClose: () => void;
 }
+
 
 export const VideoUploader: React.FC<VideoUploaderProps> = ({
   onUploadComplete,
@@ -80,11 +77,7 @@ export const VideoUploader: React.FC<VideoUploaderProps> = ({
         }
       });
 
-      onUploadComplete({
-        url: urlResult.url.href,
-        key: videoKey,
-        thumbnail: '/api/placeholder/1080/1920' // You can implement actual thumbnail generation here
-      });
+      onUploadComplete(videoKey, urlResult.url.href);
 
     } catch (error) {
       console.error('Error uploading video:', error);
