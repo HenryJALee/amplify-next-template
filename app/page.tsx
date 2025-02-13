@@ -1,6 +1,7 @@
       'use client';
 
 import { generateClient } from "aws-amplify/data";
+import { DataStore } from '@aws-amplify/datastore';
 import type { Schema } from "@/amplify/data/resource";
 import React, { useState, useEffect } from 'react';
 import { Star, Link2, Heart, Share2, User, Play, LogOut } from 'lucide-react';
@@ -47,6 +48,7 @@ type Activity = {
 // Update User type
 type User = {
   id: string;
+  cognitoId: string | null;
   username?: string | null;  // Make username optional
   firstName?: string | null;
   lastName?: string | null;
@@ -205,16 +207,19 @@ export default function Page() {
     const loadUserData = async () => {
       try {
         const currentUser = await getCurrentUser();
+        console.log('Current user:', currentUser);
+
         const response = await client.models.User.list({
-          filter: { username: { eq: currentUser.username } }
+          filter: { cognitoId: { eq: currentUser.username } }
         });
         
+        console.log('User data response:', response);
         if (response.data && response.data.length > 0) {
           setUserData(response.data[0]);
           setFormData(response.data[0]); // Initialize form data
           setAmbassador({
-            name: currentUser.username || "Ambassador",
-            username: currentUser.username || "",
+            name: response.data[0].firstName || "Ambassador",
+            username: response.data[0].username || "",
             points: 750,
             tier: "Wonder Advocate",
             discountCode: `WONDER${currentUser.username.toUpperCase()}`,  // Changed from affiliateLink
@@ -225,73 +230,93 @@ export default function Page() {
             ]
           });
         }
-            } catch (error) {
-              console.error('Error loading user data:', error);
-            }
-          };
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      }
+    };
+    loadUserData();
+  }, []);
 
-          loadUserData();
-        }, []); 
+  // Handle input changes
+  const handleInputChange = (field: keyof User, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    // Clear username error when user types
+    if (field === 'username') {
+      setUsernameError('');
+    }
+  };
 
-        // Handle input changes
-        const handleInputChange = (field: keyof AmbassadorUser, value: string) => {
-          setFormData(prev => ({
-              ...prev,
-              [field]: value
-          }));
-          
-          // Keep the username error reset for username input
-          if (field === 'username') {
-              setUsernameError('');
-          }
-      };
-
-        // Check if username is unique
-        const isUsernameUnique = async (username: string): Promise<boolean> => {
-          try {
-            const response = await client.models.User.list({
-              filter: { username: { eq: username } }
-            });
-            
-            // If there are no users with this username, or the only user is the current user
-            return !response.data?.length || 
-                    (response.data.length === 1 && response.data[0].id === userData?.id);
-          } catch (error) {
-            console.error('Error checking username:', error);
-            return false;
-          }
-        };
-
-        // Save changes with username validation
-        const handleSaveChanges = async () => {
-          try {
-            // Check if username is provided
-            if (!formData.username) {
-              setUsernameError('Username is required');
-              return;
-            }
-
-        // Check username uniqueness
-        const isUnique = await isUsernameUnique(formData.username);
-        if (!isUnique) {
-          setUsernameError('This username is already taken');
-          return;
-        }
-
+  // Check if username is unique
+  const isUsernameUnique = async (username: string): Promise<boolean> => {
+    try {
       const currentUser = await getCurrentUser();
+      const response = await client.models.User.list({
+        filter: { username: { eq: username },
+                  cognitoId: { ne: currentUser?.username },
+      }});
       
-      if (!userData?.id) {
+      // If there are no users with this username, or the only user is the current user
+      return !response.data?.length || 
+              (response.data.length === 1 && response.data[0].id === userData?.cognitoId);
+    } catch (error) {
+      console.error('Error checking username:', error);
+      return false;
+    }
+  };
+
+  // Save changes with username validation
+  const handleSaveChanges = async () => {
+    try {
+      // Check if username is provided
+      if (!formData.username) {
+        setUsernameError('Username is required');
+        return;
+      }
+
+      // Check username uniqueness
+      const isUnique = await isUsernameUnique(formData.username);
+      if (!isUnique) {
+        setUsernameError('This username is already taken');
+        return;
+      }
+      const currentUser = await getCurrentUser();
+
+      const currentUserData = await client.models.User.list({
+        filter: { cognitoId: { eq: currentUser.username } }
+      });
+
+      if (!currentUserData.data || currentUserData.data.length === 0) {
         // Create new user
         const newUser = await client.models.User.create({
-          cognitoId: currentUser.userId, // Store Cognito ID for reference
-          ...formData
+          cognitoId: currentUser.userId,
+          username: formData.username,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          streetAddress: formData.streetAddress,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode,
+          country: formData.country,
+          profileImageKey: currentUserData.data[0].profileImageKey
+
         });
         setUserData(newUser.data);
       } else {
-        // Update existing user
+        
         const updatedUser = await client.models.User.update({
-          id: userData.id,
-          ...formData
+          id: currentUserData.data[0].id, // This is required
+          username: formData.username,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          streetAddress: formData.streetAddress,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode,
+          country: formData.country,
+          profileImageKey: currentUserData.data[0].profileImageKey
         });
         setUserData(updatedUser.data);
       }
@@ -302,9 +327,9 @@ export default function Page() {
     }
   };
   
-          const renderContent = () => {
-            switch (activeSection) {
-              case 'home':
+  const renderContent = () => {
+     switch (activeSection) {
+       case 'home':
           return (
             <div className="p-6 space-y-6">
               {/* Welcome Message */}
@@ -326,7 +351,6 @@ export default function Page() {
                     <p><span className="font-medium">Lemon8:</span> @thewonderverse</p>
                   </div>
                 </div>
-
               <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
                 <h3 className="font-semibold mb-2">Discount Code</h3>
                 <div className="flex gap-2">
@@ -355,37 +379,6 @@ export default function Page() {
                 </div>      
               </div>
             </div>
-            {/* TikTok Submission Section */}
-            <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
-                <h3 className="font-semibold text-lg mb-2 text-[#ff47b0]">Submit Your TikTok Content</h3>
-                
-            {/* TikTok Username Input */}
-            <div className="flex gap-2 mb-4">
-            <input
-            type="text"
-            placeholder="Enter your TikTok username"
-            value={formData?.tiktokUsername || ''}
-            onChange={(e) => handleInputChange('tiktokUsername', e.target.value)}
-            className="flex-1 p-2 border rounded"
-        />
-        <button 
-            onClick={() => alert('TikTok Username Saved!')}
-            className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-all text-sm shadow-md"
-        >
-            Save
-        </button>
-    </div>
-
-    {/* Video Upload Button */}
-    <div className="flex justify-end">
-        <button 
-            onClick={() => setShowVideoUploader(true)}
-            className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-all text-sm shadow-md flex items-center gap-2"
-        >
-            📹 Upload TikTok Post
-        </button>
-    </div>
-</div>
 
             {/* Recent Activity */}
             <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
