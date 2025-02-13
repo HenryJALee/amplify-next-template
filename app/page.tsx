@@ -1,4 +1,4 @@
-'use client';
+      'use client';
 
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
@@ -29,6 +29,7 @@ import customstar from '../public/icons/customstar.png';
 import type { ImageProps } from 'next/image';
 import { Menu, X } from 'lucide-react';
 import cursorIcon from '../public/icons/customstar.png'; 
+import FAQDropdown from './components/FAQDropdown';
 
 
 
@@ -441,7 +442,7 @@ export default function Page() {
                         showUploadButton
                       /> 
                     </div>
-                    <p className="text-pink-500 text-xl"> {/* Increased text size */}
+                    <p className="text-pink-500 text-xxl"> {/* Increased text size */}
                       Not to be dramatic, but your being here literally made our whole day sparkle! ⭐
                     </p>
                   </div>
@@ -586,6 +587,10 @@ export default function Page() {
                   </button>
                 </div>
               </form>
+              {/* FAQ Dropdown Section */}
+            <div className="mt-8">
+              <FAQDropdown />
+            </div>
             </div>
           );
 
