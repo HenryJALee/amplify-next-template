@@ -15,17 +15,19 @@ export type UseProfileImageProps = {
   onUpdateUser?: (data: { id: string; profileImageKey: string | null }) => Promise<void>;
 };
 
-export const useProfileImage = ({ userData, onUpdateUser }: UseProfileImageProps) => {
+export const useProfileImage = ({ userData, onUpdateUser }:UseProfileImageProps)=> {
   const [profileImage, setProfileImage] = useState<ProfileImageType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Load profile image only when userData or userData.profileImageKey changes
   useEffect(() => {
     const loadProfileImage = async () => {
       if (!userData?.profileImageKey) {
-        console.log('No profile image key found');
+        setProfileImage(null);
         return;
       }
-      
+
+      setIsLoading(true);
       try {
         console.log('Attempting to load profile image with key:', userData.profileImageKey);
         
@@ -56,11 +58,13 @@ export const useProfileImage = ({ userData, onUpdateUser }: UseProfileImageProps
             console.error('Error cleaning up invalid profile image reference:', cleanupError);
           }
         }
+      } finally {
+        setIsLoading(false);
       }
     };
 
     loadProfileImage();
-  }, [userData?.profileImageKey, userData?.id, onUpdateUser]);
+  }, [userData?.profileImageKey]); // Only depend on the profileImageKey
 
   const handleImageUpload = async (file: File): Promise<void> => {
     try {

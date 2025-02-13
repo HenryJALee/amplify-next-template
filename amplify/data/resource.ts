@@ -28,6 +28,16 @@ const schema = a.schema({
       profileImageKey: a.string()
     })
     .authorization((allow) => [allow.owner()]),
+  
+    Message: a
+      .model({
+        id: a.id(),
+        sender: a.string(),
+        content: a.string(),
+        timestamp: a.string(),
+        read: a.boolean()
+      })
+      .authorization((allow) => [allow.owner()]),
 
     CommunityPost: a.model({
         id: a.id(),
