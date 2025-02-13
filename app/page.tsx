@@ -3,12 +3,12 @@
 import { generateClient } from "aws-amplify/data";
 import { DataStore } from '@aws-amplify/datastore';
 import type { Schema } from "@/amplify/data/resource";
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Star, Link2, Heart, Share2, User, Play, LogOut } from 'lucide-react';
 import { signOut, getCurrentUser } from 'aws-amplify/auth';
 import { useRouter } from 'next/navigation';
 import { VideoUploader } from './components/VideoUploader';
-import { createCommunityPost } from './utils/community';
+import { createCommunityPost, listCommunityPosts } from './utils/community';
 import Image from 'next/image'
 import { Amplify } from 'aws-amplify';
 import outputs from "@/amplify_outputs.json";
@@ -122,17 +122,24 @@ const DemoFeed: Post[] = [
   }
 ];
 
+
 export default function Page() {
   // Add new states for user data
   const [showVideoUploader, setShowVideoUploader] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); 
   const [userData, setUserData] = useState<User | null>(null);
   const [usernameError, setUsernameError] = useState<string>('');
+  const [formData, setFormData] = useState<Partial<User>>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<AmbassadorUser>>({
     tiktokUsername: '',  // 
 });
+
   const client = generateClient<Schema>();
   const router = useRouter();
+  const [communityPosts, setCommunityPosts] = useState<any[]>([]);
+
     
   const [activeSection, setActiveSection] = useState<'home' | 'community' | 'messages' | 'profile' | 'game'>('home');  
   const [ambassador, setAmbassador] = useState<Ambassador>({
@@ -158,15 +165,16 @@ export default function Page() {
     }
   });
 
-  // Add this function to handle the upload completion
-  const handleVideoUploadComplete = async () => {
+  const handleVideoUploadComplete = async (key: string, url: string) => {
     try {
-      await createCommunityPost(client, {
-        creator:  'unknown',
-        caption: 'Hello WOrld',
-        mediaUrl: 's3link' // get from uploader
-      });
 
+      await createCommunityPost({
+        creator: 'unknown', 
+        caption: 'Hello World',
+        mediaUrl: url, // Use the actual S3 URL from upload
+        mediaKey: key // Add the S3 key if needed in your schema
+      });
+      
       // Add points for uploading content
       const points = 50; // Adjust point value as needed
       setAmbassador(prev => ({
@@ -182,14 +190,12 @@ export default function Page() {
           ...prev.recentActivity
         ]
       }));
-
       setShowVideoUploader(false);
     } catch (error) {
       console.error('Error creating post:', error);
       alert('Failed to create post. Please try again.');
     }
   };
-
 
   // Add the handleSignOut function
   const handleSignOut = async () => {
@@ -235,6 +241,64 @@ export default function Page() {
     };
     loadUserData();
   }, []);
+
+  // Add refs for video elements
+  const videoRefs = useRef<{ [key: string]: HTMLVideoElement }>({});
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      if (activeSection === 'community') {
+        setIsLoading(true);
+        setError(null);
+        try {
+          const posts = await listCommunityPosts();
+          console.log('Posts in component:', posts); // Add this log
+          setCommunityPosts(posts);
+        } catch (error) {
+          console.error('Error fetching posts:', error);
+          setError('Failed to load posts');
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchPosts();
+  }, [activeSection]);
+  
+  // Add intersection observer to handle video playback
+  useEffect(() => {
+    if (!communityPosts.length) return;
+
+    const options = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.7,
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const video = entry.target as HTMLVideoElement;
+        if (entry.isIntersecting) {
+          video.play();
+        } else {
+          video.pause();
+          video.currentTime = 0;
+        }
+      });
+    }, options);
+
+    // Observe all videos
+    Object.values(videoRefs.current).forEach((video) => {
+      if (video) {
+        observer.observe(video);
+      }
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [communityPosts]);
 
   // Handle input changes
   const handleInputChange = (field: keyof User, value: string) => {
@@ -402,12 +466,12 @@ export default function Page() {
                 ))}
               </div>
             </div>
-          {showVideoUploader && (
-            <VideoUploader
-              onUploadComplete={handleVideoUploadComplete}
-              onClose={() => setShowVideoUploader(false)}
-            />
-          )}
+            {showVideoUploader && (
+              <VideoUploader
+                onUploadComplete={(key: string, url: string) => handleVideoUploadComplete(key, url)}
+                onClose={() => setShowVideoUploader(false)}
+              />
+            )}
           </div>
         );
         case 'messages':  // Add this new case
@@ -584,89 +648,78 @@ export default function Page() {
 
           case 'community':
           return (
-            <div className="h-screen flex flex-col bg-pink-50">
-              <AmbassadorSpotlight />
+            <div className="min-h-screen bg-gray-100 py-8">
+              {isLoading && (
+                <div className="flex items-center justify-center h-[70vh]">
+                  <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-pink-500" />
+                </div>
+              )}
+        
+              {error && (
+                <div className="flex items-center justify-center h-[70vh]">
+                  <p className="text-red-500">{error}</p>
+                </div>
+              )}
+        
+              {!isLoading && !error && communityPosts.length === 0 && (
+                <div className="flex items-center justify-center h-[70vh]">
+                  <p className="text-gray-500">No posts yet</p>
+                </div>
+              )}
+        
+              {!isLoading && !error && communityPosts.length > 0 && (
+                <div className="container mx-auto px-4">
+                  {communityPosts.map((post, index) => (
+                    <div key={post.id} className="mb-16">
+                      <div className="phone-frame">
+                        <div className="phone-screen">
 
-
-              {/* Vertical Scrolling Feed */}
-              <div className="flex-1 overflow-y-auto snap-y snap-mandatory">
-                {DemoFeed.map((post, index) => (
-                  <div 
-                    key={index} 
-                    className="h-[calc(100vh-80px)] snap-start flex flex-col bg-pink-100 relative"
-                  >
-                    {/* Post Media Content */}
-                    <div className="relative flex-1 bg-pink-200">
-                      {post.mediaType === 'video' ? (
-                        <div className="w-full h-full relative">
                           <video
+                            ref={el => {
+                              if (el) videoRefs.current[post.id] = el;
+                            }}
                             className="w-full h-full object-cover"
                             loop
                             playsInline
-                            controls={false}
-                            muted // Remove this if you want sound enabled by default
-                            poster={post.thumbnail}
+                            muted
+                            preload="auto"
                           >
                             <source src={post.mediaUrl} type="video/mp4" />
                             Your browser does not support the video tag.
                           </video>
-                          {/* Play/Pause Overlay */}
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <button className="p-4 rounded-full bg-black/30 text-white">
-                              <Play size={24} />
+
+                          {/* Overlay for post information */}
+                          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden">
+                                <img
+                                  src="/default-avatar.png"
+                                  alt={post.creator}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <span className="text-white font-medium">@{post.creator}</span>
+                            </div>
+                            <p className="text-white text-sm">{post.caption}</p>
+                          </div>
+        
+                          {/* Interaction buttons */}
+                          <div className="absolute right-4 bottom-20 flex flex-col gap-4">
+                            <button className="bg-pink-500/80 p-3 rounded-full text-white hover:bg-pink-600 transition-colors">
+                              <Heart size={20} />
+                              <span className="text-xs block mt-1">{post.likes || 0}</span>
+                            </button>
+                            
+                            <button className="bg-pink-500/80 p-3 rounded-full text-white hover:bg-pink-600 transition-colors">
+                              <Star size={20} />
+                              <span className="text-xs block mt-1">{post.points || 0}</span>
+                            </button>
+        
+                            <button className="bg-pink-500/80 p-3 rounded-full text-white hover:bg-pink-600 transition-colors">
+                              <Share2 size={20} />
                             </button>
                           </div>
                         </div>
-                      ) : (
-                        <img 
-                          src={post.mediaUrl}
-                          alt="Post content"
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                      
-                      {/* Overlay Gradient */}
-                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-pink-900/60" />
-
-                      {/* Post Info Overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                        <div className="flex items-center gap-3 mb-3">
-                          <img
-                            src="/api/placeholder/40/40"
-                            alt={post.creator}
-                            className="w-10 h-10 rounded-full border-2 border-white"
-                          />
-                          <span className="font-semibold">@{post.creator}</span>
-                        </div>
-                        <p className="mb-2 text-shadow-sm">{post.content}</p>
-                      </div>
-
-                      {/* Interaction Buttons */}
-                  <div className="absolute right-4 bottom-20 flex flex-col gap-4 items-center">
-                    <button className="flex flex-col items-center group transition-all">
-                      <div className="w-12 h-12 bg-pink-500/80 hover:bg-pink-500 rounded-full flex items-center justify-center backdrop-blur-sm">
-                        <Image 
-                          src={customheart}
-                          alt="Like"
-                          width={24}
-                          height={24}
-                          className="text-white"
-                        />
-                      </div>
-                      <span className="text-white text-sm mt-1 group-hover:scale-110 transition-transform">
-                        {post.likes}
-                      </span>
-                    </button>
-
-                    <button className="flex flex-col items-center group transition-all">
-                      <div className="w-12 h-12 bg-pink-500/80 hover:bg-pink-500 rounded-full flex items-center justify-center backdrop-blur-sm">
-                        <Image 
-                          src={customstar}
-                          alt="Points"
-                          width={24}
-                          height={24}
-                          className="text-white"
-                        />
                       </div>
                       <span className="text-white text-sm mt-1 group-hover:scale-110 transition-transform">
                         +{post.points}
@@ -681,16 +734,10 @@ export default function Page() {
                     </div>
                   </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Navigation Hint */}
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm bg-pink-500/80 px-4 py-2 rounded-full backdrop-blur-sm">
-                Scroll for more
-              </div>
-
-              </div>
+                  ))}
+                </div>
+              )}
+            </div>
           );
         
           case 'game':

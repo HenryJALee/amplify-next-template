@@ -1,54 +1,38 @@
-import { type Schema } from '@/amplify/data/resource';
 import { generateClient } from 'aws-amplify/api';
+import { type Schema } from '../../amplify/data/resource';
 
-// Define the input type
-type CreateCommunityPostInput = {
-  creator: string;
-  caption: string;
-  mediaUrl?: string;
+const client = generateClient<Schema>();
+
+
+export const listCommunityPosts = async () => {
+  const client = generateClient<Schema>();
+  
+  try {
+    const response = await client.models.CommunityPost.list();
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching community posts:', error);
+    throw new Error('Failed to fetch community posts');
+  }
 };
 
-// Define the return type
-type CommunityPostResponse = {
-  id: string;
+
+export const createCommunityPost = async (
+data: {
   creator: string;
   caption: string;
   mediaUrl: string;
   mediaKey: string;
-  mediaType: string;
-  likes: number;
-  points: number;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export const createCommunityPost = async (
-  client: ReturnType<typeof generateClient<Schema>>,
-  data: CreateCommunityPostInput
-): Promise<CommunityPostResponse> => {  
+}): Promise<any> => {  
   try {
-    // Log the incoming data
-    console.log('Creating community post with:', {
+    const response = await client.models.CommunityPost.create({
       creator: data.creator,
       caption: data.caption,
-      mediaUrl: data.mediaUrl || 'no-media'
+      mediaUrl: data.mediaUrl,
+      mediaKey: data.mediaKey
     });
-    
-    // Return mock data with the correct type
-    const mockResponse: CommunityPostResponse = {
-      id: `post-${Date.now()}`,
-      creator: data.creator,
-      caption: data.caption,
-      mediaUrl: data.mediaUrl || 'dummy-url',
-      mediaKey: 'dummy-key',
-      mediaType: 'video',
-      likes: 0,
-      points: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
 
-    return mockResponse;
+    return response;
   } catch (error) {
     console.error('Error in createCommunityPost:', error);
     throw new Error('Failed to create community post');
