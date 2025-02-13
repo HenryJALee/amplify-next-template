@@ -123,7 +123,7 @@ const DomeProfilePicture: React.FC<DomeProfilePictureProps> = ({
                   </button>
                  {/* <p className="mt-2 text-sm text-gray-500">
                     JPG, PNG or GIF up to 2MB
-                  </p> */} 
+                  </p> } 
                   {profileImage && onImageRemove && (
                     <button
                       onClick={onImageRemove}
@@ -132,7 +132,7 @@ const DomeProfilePicture: React.FC<DomeProfilePictureProps> = ({
                     >
                       Remove photo
                     </button>
-                  )}
+                  )*/}
                 </div>
               </FileUploader>
             </div>

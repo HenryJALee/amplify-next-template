@@ -1,7 +1,7 @@
 'use client';
 
 import { generateClient } from "aws-amplify/data";
-import { DataStore } from '@aws-amplify/datastore';
+import { getUrl } from 'aws-amplify/storage';
 import type { Schema } from "@/amplify/data/resource";
 import React, { useRef, useState, useEffect } from 'react';
 import { Star, Link2, Heart, Share2, User, Play, LogOut } from 'lucide-react';
@@ -92,44 +92,12 @@ type AmbassadorUser = {
   tiktokUsername?: string | null;
 };
 
-// Add this type for profile image
-type ProfileImage = {
-  url: string;
-  key: string;
-};
-
-// Demo data
-const DemoFeed: Post[] = [
-  {
-    creator: "Sarah W.",
-    platform: "tiktok",
-    mediaType: "video",
-    mediaUrl: "https://example.com/video1.mp4", // Replace with actual video URL
-    thumbnail: "/api/placeholder/1080/1920",
-    likes: 1200,
-    points: 50,
-    content: "Trying out the new Pink Yacht Club scent! 🌸✨ #WonderVerse #PinkYachtClub"
-  },
-  {
-    creator: "Maya K.",
-    platform: "instagram",
-    mediaType: "video",
-    mediaUrl: "https://example.com/video2.mp4", // Replace with actual video URL
-    thumbnail: "/api/placeholder/1080/1920",
-    likes: 890,
-    points: 30,
-    content: "Love my Wonderverse collection! GRWM with my favorite scents 💕 #WonderMaker"
-  }
-];
-
-
 export default function Page() {
   // Add new states for user data
   const [showVideoUploader, setShowVideoUploader] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); 
+  const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
   const [userData, setUserData] = useState<User | null>(null);
   const [usernameError, setUsernameError] = useState<string>('');
-  const [formData, setFormData] = useState<Partial<User>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<AmbassadorUser>>({
@@ -253,6 +221,18 @@ export default function Page() {
         try {
           const posts = await listCommunityPosts();
           console.log('Posts in component:', posts); // Add this log
+          for (let post of posts) {
+            if (post.mediaKey) {
+              const signedURL = await getUrl({
+                key: post.mediaKey,
+                options: {
+                  accessLevel: 'guest',
+                  validateObjectExistence: true
+                } 
+              })
+              post.mediaUrl = signedURL.url.href;
+            }
+          }
           setCommunityPosts(posts);
         } catch (error) {
           console.error('Error fetching posts:', error);
@@ -269,37 +249,78 @@ export default function Page() {
   // Add intersection observer to handle video playback
   useEffect(() => {
     if (!communityPosts.length) return;
-
+  
     const options = {
       root: null,
       rootMargin: '0px',
       threshold: 0.7,
     };
-
+  
     const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
+      entries.forEach(async (entry) => {
         const video = entry.target as HTMLVideoElement;
+        
         if (entry.isIntersecting) {
-          video.play();
+          try {
+            // Pause any currently playing video
+            if (currentlyPlaying && currentlyPlaying !== video.id) {
+              const previousVideo = videoRefs.current[currentlyPlaying];
+              if (previousVideo) {
+                previousVideo.pause();
+                previousVideo.currentTime = 0;
+              }
+            }
+            
+            // Play the new video
+            if (video.paused) {
+              await video.play().catch(error => {
+                // Handle play() promise rejection
+                if (error.name !== 'AbortError') {
+                  console.error('Video playback error:', error);
+                }
+              });
+              setCurrentlyPlaying(video.id);
+            }
+          } catch (error) {
+            console.error('Error handling video playback:', error);
+          }
         } else {
-          video.pause();
-          video.currentTime = 0;
+          // If video is leaving viewport
+          try {
+            video.pause();
+            video.currentTime = 0;
+            if (currentlyPlaying === video.id) {
+              setCurrentlyPlaying(null);
+            }
+          } catch (error) {
+            console.error('Error pausing video:', error);
+          }
         }
       });
     }, options);
-
+  
     // Observe all videos
     Object.values(videoRefs.current).forEach((video) => {
       if (video) {
         observer.observe(video);
       }
     });
-
+  
+    // Cleanup function
     return () => {
+      // Pause all videos and disconnect observer
+      Object.values(videoRefs.current).forEach((video) => {
+        if (video) {
+          video.pause();
+          observer.unobserve(video);
+        }
+      });
       observer.disconnect();
+      setCurrentlyPlaying(null);
     };
-  }, [communityPosts]);
+  }, [communityPosts, currentlyPlaying]); // Add currentlyPlaying to dependencies
 
+  
   // Handle input changes
   const handleInputChange = (field: keyof User, value: string) => {
     setFormData(prev => ({
@@ -363,7 +384,7 @@ export default function Page() {
           state: formData.state,
           zipCode: formData.zipCode,
           country: formData.country,
-          profileImageKey: currentUserData.data[0].profileImageKey
+          //profileImageKey: currentUserData.data[0].profileImageKey
 
         });
         setUserData(newUser.data);
@@ -379,7 +400,7 @@ export default function Page() {
           state: formData.state,
           zipCode: formData.zipCode,
           country: formData.country,
-          profileImageKey: currentUserData.data[0].profileImageKey
+          //profileImageKey: currentUserData.data[0].profileImageKey
         });
         setUserData(updatedUser.data);
       }
@@ -480,7 +501,6 @@ export default function Page() {
             <MessageDashboard />
           </div>
         );
-      
         case 'profile':
           return (
             <div className="p-6 max-w-4xl mx-auto">
@@ -645,9 +665,11 @@ export default function Page() {
               </form>
             </div>
           );
-
-          case 'community':
+        case 'community':
           return (
+            <div className="h-screen flex flex-col bg-pink-50">
+              <AmbassadorSpotlight />
+
             <div className="min-h-screen bg-gray-100 py-8">
               {isLoading && (
                 <div className="flex items-center justify-center h-[70vh]">
@@ -673,7 +695,6 @@ export default function Page() {
                     <div key={post.id} className="mb-16">
                       <div className="phone-frame">
                         <div className="phone-screen">
-
                           <video
                             ref={el => {
                               if (el) videoRefs.current[post.id] = el;
@@ -714,33 +735,28 @@ export default function Page() {
                               <Star size={20} />
                               <span className="text-xs block mt-1">{post.points || 0}</span>
                             </button>
-        
+
                             <button className="bg-pink-500/80 p-3 rounded-full text-white hover:bg-pink-600 transition-colors">
                               <Share2 size={20} />
                             </button>
                           </div>
-                        </div>
-                      </div>
-                      <span className="text-white text-sm mt-1 group-hover:scale-110 transition-transform">
-                        +{post.points}
-                      </span>
-                    </button>
-
-                    <div className="w-12 h-12 bg-pink-500/80 hover:bg-pink-500 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <div className="w-12 h-12 bg-pink-500/80 hover:bg-pink-500 rounded-full flex items-center justify-center backdrop-blur-sm">
                       <Share2 
                         className="text-white"
                         size={24}
                       />
                     </div>
                   </div>
-                    </div>
-                  ))}
                 </div>
-              )}
+              </div>
+              ))}
             </div>
-          );
+            )}
+          </div>
+        </div>
+        );
         
-          case 'game':
+        case 'game':
         return (
           <div className="w-full flex flex-col items-center bg-[#FFF6F9] p-4">
       {/* Wonder Wheel */}

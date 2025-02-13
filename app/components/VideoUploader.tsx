@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Video, X } from 'lucide-react';
 import { FileUploader } from './FileUploader';
 import { uploadData, getUrl } from 'aws-amplify/storage';
-import { getCurrentUser } from 'aws-amplify/auth';
+import { getCurrentUser  } from 'aws-amplify/auth';
+import { getSignedCookie } from '../lib/auth';
+
 
 interface VideoUploaderProps {
   onUploadComplete: (key: string, url: string) => void;
@@ -33,6 +35,12 @@ export const VideoUploader: React.FC<VideoUploaderProps> = ({
       if (file.size > 100 * 1024 * 1024) {
         throw new Error('Video must be less than 100MB');
       }
+
+      // Get signed cookie first
+      const { cookieKey, signedUrl } = await getSignedCookie({
+        fileType: file.type,
+        fileName: file.name
+      });
 
       console.log('Starting upload of file:', {
         size: file.size,
