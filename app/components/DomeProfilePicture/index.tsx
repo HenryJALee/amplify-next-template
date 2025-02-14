@@ -1,6 +1,4 @@
 import React from 'react';
-import Image from 'next/image';
-import { User } from 'lucide-react';
 import { ProfileImageType } from '../../hooks/useProfileImage';
 import { FileUploader } from '../FileUploader';
 
@@ -18,10 +16,8 @@ interface DomeProfilePictureProps {
 const DomeProfilePicture: React.FC<DomeProfilePictureProps> = ({
   profileImage,
   className='',
-  isLoading = false,
   size = 'md',
   onImageUpload,
-  onImageRemove,
   showUploadButton = false
 }) => {
   

@@ -16,20 +16,12 @@ import PinkStar from '../public/icons/Pink-Star.png';
 import BlueStar from '../public/icons/Blue-Star.png';
 import GreenStar from '../public/icons/Green-Star.png';
 import YellowStar from '../public/icons/Yellow-Star.png';
-import PinkPalm from '../public/icons/Pink-Palm.png';
-import WONDERLOGO from '../public/icons/Wonderverse-logo-new.png';
 import WONDERLOGO_UPDATED from '../public/icons/Wonderverse-logo-update.png';
 import MessageDashboard from './components/MessageDashboard';
 import DomeProfilePicture from './components/DomeProfilePicture';
 import { useProfileImage } from './hooks/useProfileImage';
-import { ProfileImageType } from './hooks/useProfileImage';
 import AmbassadorSpotlight from './components/AmbassadorSpotlight';
 import WonderWheel from './components/WonderWheel';;
-import customheart from '../public/icons/custonheart.png';  // Note: fixing typo in filename if needed
-import customstar from '../public/icons/customstar.png';
-import type { ImageProps } from 'next/image';
-import { Menu, X } from 'lucide-react';
-import cursorIcon from '../public/icons/customstar.png'; 
 import FAQDropdown from './components/FAQDropdown';
 
 
@@ -69,16 +61,6 @@ type Ambassador = {
   recentActivity: Activity[];
 };
 
-type Post = {
-  creator: string;
-  platform: 'tiktok' | 'instagram';
-  mediaType: 'video' | 'image';
-  mediaUrl: string;
-  likes: number;
-  points: number;
-  content: string;
-  thumbnail?: string;
-};
 type AmbassadorUser = {
   id: string;
   username?: string | null;
@@ -696,7 +678,7 @@ export default function Page() {
         
               {!isLoading && !error && communityPosts.length > 0 && (
                 <div className="container mx-auto px-4">
-                  {communityPosts.map((post, index) => (
+                  {communityPosts.map((post) => (
                     <div key={post.id} className="mb-16">
                       <div className="phone-frame">
                         <div className="phone-screen">
