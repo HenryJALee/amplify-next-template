@@ -8,6 +8,24 @@ import outputs from '@/amplify_outputs.json';
 import Image from 'next/image';
 import { ReactNode } from 'react';
 
+// Add the WonderSocietyButton component here
+const WonderSocietyButton = () => {
+  const handleClick = () => {
+    window.open('https://forms.gle/yphHf7qyBqx4RwYv6', '_blank');
+  };
+
+  return (
+    <div className="flex justify-center w-full">
+      <button
+        onClick={handleClick}
+        className="mt-6 px-6 py-2 rounded-full bg-pink-500 hover:bg-pink-600 transition-colors duration-200 ease-in-out"
+      >
+        <span className="text-lg text-white">✨ Join the Wonder Society ✨</span>
+      </button>
+    </div>
+  );
+};
+
 // Type safety for outputs
 if (!outputs) {
   throw new Error('Amplify outputs not found');
@@ -17,7 +35,6 @@ try {
   Amplify.configure(outputs);
 } catch (error) {
   console.error('Error configuring Amplify:', error);
-  // You might want to add error handling UI here
 }
 
 const logintheme = createTheme({
@@ -38,14 +55,12 @@ const logintheme = createTheme({
       authenticator: {
         router: {
           borderWidth: '0px'
-        
         }
       }
     }
   }
 });
 
-// Proper type definition
 interface RootLayoutProps {
   children: ReactNode;
 }
@@ -54,65 +69,58 @@ function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
       <body>
-
-                  <Authenticator.Provider>
-                    <Authenticator 
-                      hideSignUp={true} 
-                      components={{
-                        SignIn: {
-                          Header() {
-                            return (
-                              <ThemeProvider theme={logintheme}>
-                              <div className="w-full">
-                              <div className="bg-[#fff6f9] p-6">
-                              <div className="min-h-screen bg-[#FFF6F9] flex flex-col items-center justify-center p-6">
-                                <div className="max-w-2xl mx-auto bg-[#fff6f9] p-8 mb-8 w-full">
-                                  <div className="flex flex-col items-center mb-8">
-                                    <div className="mb-4 relative">
-                                      <Image 
-                                        src="/icons/Wonderverse-logo-update.png"
-                                        alt="Wonderverse Logo"
-                                        width={300}
-                                        height={104}
-                                        priority
-                                        onError={() => {
-                                          console.error('Logo failed to load');
-                                          // Add fallback if needed
-                                        }}
-                                      />
-                                    </div>
-                                    <div className="mb-4 relative">
-                                      <Image 
-                                        src="/icons/pink-yacht-club.png"
-                                        alt="Pink Yacht Club Icon"
-                                        width={200}
-                                        height={200}
-                                        priority
-                                        onError={() => {
-                                          console.error('Icon failed to load');
-                                          // Add fallback if needed
-                                        }}
-                                      />
-                                    </div>
-                                  </div>
-                                  </div>
+        <Authenticator.Provider>
+          <ThemeProvider theme={logintheme}>
+            <Authenticator 
+              hideSignUp={true} 
+              components={{
+                SignIn: {
+                  Header() {
+                    return (
+                      <div className="w-full">
+                        <div className="bg-[#fff6f9]">
+                          <div className="bg-[#FFF6F9] flex flex-col items-center">
+                            <div className="max-w-2xl mx-auto bg-[#fff6f9] w-full">
+                              <div className="flex flex-col items-center">
+                                <div className="relative">
+                                  <Image 
+                                    src="/icons/Wonderverse-logo-update.png"
+                                    alt="Wonderverse Logo"
+                                    width={300}
+                                    height={104}
+                                    priority
+                                    onError={(e: any) => {
+                                      console.error('Logo failed to load');
+                                    }}
+                                  />
                                 </div>
-
-                                <p className="text-center mt-6 text-lg" style={{ color: "#ff47b0" }}>
-                                  ✨ Join the Wonder Society ✨
-                                </p>
+                                <div className="relative mt-2">
+                                  <Image 
+                                    src="/icons/pink-yacht-club.png"
+                                    alt="Pink Yacht Club Icon"
+                                    width={150}
+                                    height={150}
+                                    priority
+                                    onError={(e: any) => {
+                                      console.error('Icon failed to load');
+                                    }}
+                                  />
+                                </div>
                               </div>
-                            </div>   
-                              </ThemeProvider>
-                            );
-                          }
-                        }
-                      }
-                    }
-                  >
-                      {children}
-                    </Authenticator>
-                  </Authenticator.Provider>
+                            </div>
+                          </div>
+                          <WonderSocietyButton />
+                        </div>
+                      </div>
+                    );
+                  }
+                }
+              }}
+            >
+              {children}
+            </Authenticator>
+          </ThemeProvider>
+        </Authenticator.Provider>
       </body>
     </html>
   );

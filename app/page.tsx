@@ -23,6 +23,7 @@ import { useProfileImage } from './hooks/useProfileImage';
 import AmbassadorSpotlight from './components/AmbassadorSpotlight';
 import WonderWheel from './components/WonderWheel';;
 import FAQDropdown from './components/FAQDropdown';
+import VideoPost from './components/VideoPost';
 
 
 
@@ -74,6 +75,7 @@ type CommunityPostType = {
   points: Nullable<number>;
   createdAt: Nullable<string>;
   updatedAt: string;
+  creatorProfileImage?: string;
 };
 
 
@@ -136,16 +138,37 @@ export default function Page() {
 
   const handleVideoUploadComplete = async (key: string, url: string) => {
     try {
+      // Get current user info
+      const currentUser = await getCurrentUser();
+      const username = userData?.username || currentUser.username;
 
-      await createCommunityPost({
-        creator: 'unknown', 
-        caption: 'Hello World',
-        mediaUrl: url, // Use the actual S3 URL from upload
-        mediaKey: key // Add the S3 key if needed in your schema
-      });
+      // Create and submit the post
+      const newPost = {
+        creator: username,
+        caption: 'New video post',
+        mediaUrl: url,
+        mediaKey: key,
+        mediaType: "video" as "video",
+        likes: 0,
+        points: 0
+      };
+
+      const response = await createCommunityPost(newPost);
+      
+      // Add the new post to the community posts state
+      if (response.data) {
+        const postWithSignedUrl = {
+          id: response.data.id,
+          ...newPost,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        
+        setCommunityPosts(prevPosts => [postWithSignedUrl, ...prevPosts]);
+      }
       
       // Add points for uploading content
-      const points = 50; // Adjust point value as needed
+      const points = 50;
       setAmbassador(prev => ({
         ...prev,
         points: prev.points + points,
@@ -159,12 +182,13 @@ export default function Page() {
           ...prev.recentActivity
         ]
       }));
+
       setShowVideoUploader(false);
     } catch (error) {
       console.error('Error creating post:', error);
       alert('Failed to create post. Please try again.');
     }
-  };
+};
 
   // Add the handleSignOut function
   const handleSignOut = async () => {
@@ -216,52 +240,98 @@ export default function Page() {
 
   useEffect(() => {
     const fetchPosts = async () => {
-      if (activeSection === 'community') {
-        setIsLoading(true);
-        setError(null);
-        try {
-          const response = await listCommunityPosts();
-          
-          const posts = response.data.map(post => ({
-            id: post.id,
-            creator: post.creator,
-            mediaType: post.mediaType,
-            mediaUrl: post.mediaUrl,
-            mediaKey: post.mediaKey,
-            caption: post.caption,
-            points: post.points,
-            likes: post.likes,
-            createdAt: post.createdAt,
-            updatedAt: post.updatedAt
-          }));
+        console.log("🔄 fetchPosts() function is running..."); // ✅ Check if function runs
 
-          console.log('Posts in component:', posts); // Add this log
+        if (activeSection === 'community') {
+            setIsLoading(true);
+            setError(null);
+            try {
+                console.log("📡 Fetching posts from listCommunityPosts()...");
 
-          for (let _post of posts) {
-            if (_post.mediaKey) {
-              const signedURL = await getUrl({
-                key: _post.mediaKey,
-                options: {
-                  accessLevel: 'guest',
-                  validateObjectExistence: true
-                } 
-              })
-              _post.mediaUrl = signedURL.url.href;
+                const response = await listCommunityPosts();
+
+                console.log("✅ listCommunityPosts() response:", response);
+
+                if (!response.data || response.data.length === 0) {
+                    console.warn("⚠️ No posts found!");
+                }
+
+                const posts = await Promise.all(response.data.map(async (post) => {
+                    console.log("🔹 Processing post:", post);
+
+                    let profileImageUrl = "/default-avatar.png"; // Default image
+
+                    if (post.creator) {
+                        console.log(`🔍 Fetching profile image for creator: ${post.creator}`);
+
+                        const userResponse = await client.models.User.list({
+                            filter: { username: { eq: post.creator } }
+                        });
+
+                        console.log("👤 User response:", userResponse);
+
+                        if (userResponse.data.length > 0) {
+                            const user = userResponse.data[0];
+                            if (user.profileImageKey) {
+                                console.log("🔗 Found profileImageKey:", user.profileImageKey);
+
+                                const signedProfileImage = await getUrl({
+                                    key: user.profileImageKey,
+                                    options: {
+                                        accessLevel: 'guest',
+                                        validateObjectExistence: true
+                                    }
+                                });
+
+                                console.log("🖼 Signed profile image URL:", signedProfileImage.url.href);
+                                profileImageUrl = signedProfileImage.url.href;
+                                
+                                // ✅ Extra Debugging Log
+                                console.log(`🖼 Profile Image for ${post.creator}:`, profileImageUrl); // ✅ Log profile image
+                                
+                            } else {
+                                console.warn("⚠️ No profile image found for user.");
+                            }
+                        } else {
+                            console.warn(`⚠️ No user found for creator: ${post.creator}`);
+                        }
+                    }
+
+                    if (post.mediaKey) {
+                        const signedURL = await getUrl({
+                            key: post.mediaKey,
+                            options: {
+                                accessLevel: 'guest',
+                                validateObjectExistence: true
+                            }
+                        });
+
+                        post.mediaUrl = signedURL.url.href;
+                        console.log("🎥 Video URL:", post.mediaUrl);
+                    }
+
+                    return {
+                        ...post,
+                        creatorProfileImage: profileImageUrl, // ✅ Attach profile image
+                    };
+                }));
+
+                console.log("✅ Final fetched posts before setting state:", posts);
+
+                setCommunityPosts([...posts]); // ✅ Ensures state updates properly
+            } catch (error) {
+                console.error("❌ Error fetching posts:", error);
+                setError("Failed to load posts");
+            } finally {
+                setIsLoading(false);
             }
-          }
-
-          setCommunityPosts(posts);
-        } catch (error) {
-          console.error('Error fetching posts:', error);
-          setError('Failed to load posts');
-        } finally {
-          setIsLoading(false);
         }
-      }
     };
 
     fetchPosts();
-  }, [activeSection]);
+}, [activeSection]);
+
+
   
   // Add intersection observer to handle video playback
   useEffect(() => {
@@ -445,6 +515,7 @@ export default function Page() {
                     />
                   </div>
                   <p className="text-[#ff47b0]">Whimsical Fragrance meets Clinically Effective and Sensory Friendly Bodycare...And this is where you come in!</p>
+                  
                   <div className="space-y-2 text-'#ff47b0'">
                     <p><span className="font-medium">TikTok:</span> @wonderverselab</p>
                     <p><span className="font-medium">Instagram:</span> @wonderverselab, @thewondysociety_</p>
@@ -481,37 +552,59 @@ export default function Page() {
               </div>
             </div>
 
-            {/* Recent Activity */}
-            <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold">Recent Activity</h3>
-                <button 
-                  className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 flex items-center gap-1"
-                  onClick={() => setShowVideoUploader(true)}
-                >
-                  Add Content <span className="text-lg">+</span>
-                </button>
-              </div>
-              <div className="space-y-4 max-h-48 overflow-y-auto">
-                {ambassador.recentActivity.map((activity, index) => (
-                  <div key={index} className="flex justify-between items-center border-b pb-2">
-                    <div>
-                      <p className="font-medium">{activity.type}</p>
-                      <p className="text-sm text-gray-500">{activity.date}</p>
-                    </div>
-                    <span className="text-pink-500 font-semibold">+{activity.points} points</span>
+           {/* Recent Activity */}
+           <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-semibold">Recent Activity</h3>
+                    <button 
+                      className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 flex items-center gap-1"
+                      onClick={() => setShowVideoUploader(true)}
+                    >
+                      Add Content <span className="text-lg">+</span>
+                    </button>
                   </div>
-                ))}
-              </div>
-            </div>
-            {showVideoUploader && (
-              <VideoUploader
-                onUploadComplete={(key: string, url: string) => handleVideoUploadComplete(key, url)}
-                onClose={() => setShowVideoUploader(false)}
-              />
-            )}
-          </div>
-        );
+
+                  {/* ✅ Only "Recent Activity" is inside this scrollable div */}
+                  <div className="space-y-4 max-h-48 overflow-y-auto">
+                    {ambassador.recentActivity.map((activity, index) => (
+                      <div key={index} className="flex justify-between items-center border-b pb-2">
+                        <div>
+                          <p className="font-medium">{activity.type}</p>
+                          <p className="text-sm text-gray-500">{activity.date}</p>
+                        </div>
+                        <span className="text-pink-500 font-semibold">+{activity.points} points</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>  {/* ✅ Close "Recent Activity" div here */}
+
+
+                {/* ✅ Video Posts - Now OUTSIDE the restricted div */}
+                <div className="mt-6 bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
+                  <h3 className="font-semibold mb-4">Recent Video Uploads</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {communityPosts.map((post) => (
+                      <VideoPost 
+                        key={post.id}
+                        post={post}
+                        videoRefs={videoRefs}
+                        currentlyPlaying={currentlyPlaying}
+                        setCurrentlyPlaying={setCurrentlyPlaying}
+                        style={{ maxWidth: '100%', height: 'auto' }} // Ensures responsiveness
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Video Uploader */}
+                {showVideoUploader && (
+                  <VideoUploader
+                    onUploadComplete={(key: string, url: string) => handleVideoUploadComplete(key, url)}
+                    onClose={() => setShowVideoUploader(false)}
+                  />
+                )}
+                </div>
+                        );
         case 'messages':  // Add this new case
         return (
           <div className="h-screen bg-[#fff6f9]">
@@ -745,12 +838,13 @@ export default function Page() {
             </div>
           );
         
-          case 'community':
-            return (
-              <div className="h-screen flex flex-col bg-pink-50">
+          
+  case 'community':
+        return (
+          <div className="h-screen flex flex-col bg-pink-50">
                 <AmbassadorSpotlight />
           
-                <div className="min-h-screen bg-gray-100 py-8">
+                <div className="min-h-screen bg-[#FFF6F9] py-8">
                   {isLoading && (
                     <div className="flex items-center justify-center h-[70vh]">
                       <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-pink-500" />
@@ -773,36 +867,55 @@ export default function Page() {
                     <div className="container mx-auto px-4">
                       {communityPosts.map((post) => (
                         <div key={post.id} className="mb-16 relative max-w-md mx-auto rounded-lg overflow-hidden shadow-lg">
-                          <video
+                         <video
                             ref={el => {
                               if (el && post.id) {
                                 videoRefs.current[post.id] = el;
                               }
                             }}
-                            className="w-full h-full object-cover"
+                            className="w-full h-auto max-w-md aspect-[9/16] object-contain"
                             loop
                             playsInline
-                            muted
+                            muted  // ✅ Keep this so videos start muted
                             preload="auto"
                           >
                             <source src={post.mediaUrl ?? undefined} type="video/mp4" />
                             Your browser does not support the video tag.
                           </video>
+                           {/* 🔊 Mute/Unmute Button */}
+                          <button
+                            onClick={() => {
+                              const video = videoRefs.current[String(post.id)]; // ✅ Ensure post.id is a string
+                              if (video) {
+                                video.muted = !video.muted; // ✅ Toggle mute state
+                              }
+                            }}
+                            className="absolute bottom-4 left-4 bg-black/50 text-white p-2 rounded-full"
+                          >
+                            {videoRefs.current[String(post.id)]?.muted ? "🔇" : "🔊"}
+                          </button>
+                          
           
-                          {/* Overlay for post information */}
-                          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
-                            <div className="flex items-center gap-3 mb-2">
-                              <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden">
-                                <img
-                                  src="/default-avatar.png"
-                                  alt={post.creator ?? "User content"}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              <span className="text-white font-medium">@{post.creator}</span>
+                         {/* Overlay for post information */}
+                            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent"
+                                style={{ minHeight: "60px", maxHeight: "auto", paddingBottom: "10px" }} // ✅ Ensures proper height
+                            >
+
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden">
+                              <img
+                                src={post.creatorProfileImage || "/default-avatar.png"}  // ✅ Pull from fetched profile image
+                                alt={post.creator ?? "User content"}
+                                className="w-full h-full object-cover"
+                              />
                             </div>
-                            <p className="text-white text-sm">{post.caption}</p>
+                            <span className="text-white font-medium">
+                              {post.creator && post.creator !== "unknown" ? `@${post.creator}` : "Unknown User"} 
+                            </span>
                           </div>
+                          <p className="text-white text-sm">{post.caption}</p>
+                        </div>
+
           
                           {/* Interaction buttons */}
                           <div className="absolute right-4 bottom-20 flex flex-col gap-4">
