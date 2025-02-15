@@ -1,10 +1,10 @@
-      'use client';
+'use client';
 
 import { generateClient } from "aws-amplify/data";
 import { getUrl } from 'aws-amplify/storage';
 import type { Schema } from "@/amplify/data/resource";
 import React, { useRef, useState, useEffect } from 'react';
-import { Star, Link2, Heart, Share2, User, Play, LogOut } from 'lucide-react';
+import { Star, Link2, Heart, Share2, User, LogOut } from 'lucide-react';
 import { signOut, getCurrentUser } from 'aws-amplify/auth';
 import { useRouter } from 'next/navigation';
 import { VideoUploader } from './components/VideoUploader';
@@ -61,6 +61,22 @@ type Ambassador = {
   recentActivity: Activity[];
 };
 
+type Nullable<T> = T | null;
+
+type CommunityPostType = {
+  id: Nullable<string>;
+  creator: Nullable<string>;
+  mediaType: "video" | null;
+  mediaUrl: Nullable<string>;
+  mediaKey: Nullable<string>;
+  caption: Nullable<string>;
+  likes: Nullable<number>;
+  points: Nullable<number>;
+  createdAt: Nullable<string>;
+  updatedAt: string;
+};
+
+
 type AmbassadorUser = {
   id: string;
   username?: string | null;
@@ -74,6 +90,7 @@ type AmbassadorUser = {
   profileImageKey?: string | null;
   tiktokUsername?: string | null;
 };
+
 
 export default function Page() {
   // Add new states for user data
@@ -89,7 +106,7 @@ export default function Page() {
 
   const client = generateClient<Schema>();
   const router = useRouter();
-  const [communityPosts, setCommunityPosts] = useState<any[]>([]);
+  const [communityPosts, setCommunityPosts] = useState<CommunityPostType[]>([]);
 
     
   const [activeSection, setActiveSection] = useState<'home' | 'community' | 'messages' | 'profile' | 'game'>('home');  
@@ -202,8 +219,23 @@ export default function Page() {
         setIsLoading(true);
         setError(null);
         try {
-          const posts = await listCommunityPosts();
+          const response = await listCommunityPosts();
+          
+          const posts = response.data.map(post => ({
+            id: post.id,
+            creator: post.creator,
+            mediaType: post.mediaType,
+            mediaUrl: post.mediaUrl,
+            mediaKey: post.mediaKey,
+            caption: post.caption,
+            points: post.points,
+            likes: post.likes,
+            createdAt: post.createdAt,
+            updatedAt: post.updatedAt
+          }));
+
           console.log('Posts in component:', posts); // Add this log
+
           for (let post of posts) {
             if (post.mediaKey) {
               const signedURL = await getUrl({
@@ -216,6 +248,7 @@ export default function Page() {
               post.mediaUrl = signedURL.url.href;
             }
           }
+
           setCommunityPosts(posts);
         } catch (error) {
           console.error('Error fetching posts:', error);
@@ -684,7 +717,9 @@ export default function Page() {
                         <div className="phone-screen">
                           <video
                             ref={el => {
-                              if (el) videoRefs.current[post.id] = el;
+                              if (el && post.id) {
+                                videoRefs.current[post.id] = el;
+                              }
                             }}
                             className="w-full h-full object-cover"
                             loop
@@ -692,7 +727,7 @@ export default function Page() {
                             muted
                             preload="auto"
                           >
-                            <source src={post.mediaUrl} type="video/mp4" />
+                            <source src={post.mediaUrl ?? undefined} type="video/mp4" />
                             Your browser does not support the video tag.
                           </video>
 
@@ -702,7 +737,7 @@ export default function Page() {
                               <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden">
                                 <img
                                   src="/default-avatar.png"
-                                  alt={post.creator}
+                                  alt={post.creator ?? "User content"}
                                   className="w-full h-full object-cover"
                                 />
                               </div>
