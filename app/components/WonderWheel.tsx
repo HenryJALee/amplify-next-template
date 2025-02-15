@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Star } from 'lucide-react';
 import { DailyScentFortune } from './DailyScentFortune';
 type SlotIcon = 'palm' | 'star' | 'burst' | 'green' | 'yellow' | 'circle' | 'heart' | 'sparkle';
 
@@ -128,8 +127,9 @@ const WonderWheel = () => {
   };
 
   const checkWin = (result: SlotIcon[]) => {
-    // 1 in 100,000 chance
-    return Math.random() < 0.00001;
+    // Check for three matching icons
+    return result[0] === result[1] && result[1] === result[2];
+    
   };
 
   useEffect(() => {

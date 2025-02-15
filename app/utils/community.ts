@@ -9,7 +9,7 @@ export const listCommunityPosts = async () => {
   
   try {
     const response = await client.models.CommunityPost.list();
-    return response.data;
+    return response;
   } catch (error) {
     console.error('Error fetching community posts:', error);
     throw new Error('Failed to fetch community posts');
