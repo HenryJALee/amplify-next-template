@@ -236,16 +236,16 @@ export default function Page() {
 
           console.log('Posts in component:', posts); // Add this log
 
-          for (let post of posts) {
-            if (post.mediaKey) {
+          for (let _post of posts) {
+            if (_post.mediaKey) {
               const signedURL = await getUrl({
-                key: post.mediaKey,
+                key: _post.mediaKey,
                 options: {
                   accessLevel: 'guest',
                   validateObjectExistence: true
                 } 
               })
-              post.mediaUrl = signedURL.url.href;
+              _post.mediaUrl = signedURL.url.href;
             }
           }
 
