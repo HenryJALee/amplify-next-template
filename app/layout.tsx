@@ -75,7 +75,7 @@ function RootLayout({ children }: RootLayoutProps) {
                                         width={300}
                                         height={104}
                                         priority
-                                        onError={(e: any) => {
+                                        onError={() => {
                                           console.error('Logo failed to load');
                                           // Add fallback if needed
                                         }}
