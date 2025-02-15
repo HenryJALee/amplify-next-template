@@ -38,6 +38,7 @@ const logintheme = createTheme({
       authenticator: {
         router: {
           borderWidth: '0px'
+          
         
         }
       }
@@ -64,11 +65,11 @@ function RootLayout({ children }: RootLayoutProps) {
                             return (
                               <ThemeProvider theme={logintheme}>
                               <div className="w-full">
-                              <div className="bg-[#fff6f9] p-6">
-                              <div className="min-h-screen bg-[#FFF6F9] flex flex-col items-center justify-center p-6">
-                                <div className="max-w-2xl mx-auto bg-[#fff6f9] p-8 mb-8 w-full">
-                                  <div className="flex flex-col items-center mb-8">
-                                    <div className="mb-4 relative">
+                              <div className="bg-[#fff6f9]">
+                              <div className="bg-[#FFF6F9] flex flex-col items-center">
+                              <div className="max-w-2xl mx-auto bg-[#fff6f9] w-full">
+                                  <div className="flex flex-col items-center">
+                                    <div className="relative">
                                       <Image 
                                         src="/icons/Wonderverse-logo-update.png"
                                         alt="Wonderverse Logo"
@@ -81,12 +82,12 @@ function RootLayout({ children }: RootLayoutProps) {
                                         }}
                                       />
                                     </div>
-                                    <div className="mb-4 relative">
+                                    <div className="relative mt-2">
                                       <Image 
                                         src="/icons/pink-yacht-club.png"
                                         alt="Pink Yacht Club Icon"
-                                        width={200}
-                                        height={200}
+                                        width={150}
+                                        height={150}
                                         priority
                                         onError={(e: any) => {
                                           console.error('Icon failed to load');
