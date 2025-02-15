@@ -20,6 +20,148 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Amplify UI Overrides */
+/* Existing styles remain the same... */
+
+/* Extended Amplify UI Overrides */
+.amplify-authenticator {
+  background-color: #fff6f9 !important;
+}
+
+.amplify-authenticator-container {
+  background-color: #fff6f9 !important;
+}
+.amplify-card {
+  position: relative !important;
+  background-color: #fff6f9 !important;
+  border: 4px solid #ff00ff !important;
+  border-radius: 12px !important;
+  box-shadow: 0px 0px 15px 5px #ff00ff !important; /* Creates the glow effect */
+  padding: 20px !important; /* Ensures the spacing doesn't shift */
+}
+.amplify-authenticator {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100vh !important; /* Makes sure it's filling the screen properly */
+}
+.amplify-card {
+  width: 100% !important;
+  max-width: 400px !important; /* Adjust width if needed */
+}
+
+.amplify-input {
+  background-color: #ffffff !important;
+  border-color: #EC4899 !important;
+}
+
+.amplify-card {
+  background-color: #fff6f9 !important;
+  box-shadow: none !important;
+}
+
+.amplify-flex {
+  background-color: #fff6f9 !important;
+}
+
+.amplify-button {
+  background-color: #EC4899  !important;
+  color: #ffffff !important; 
+}
+
+.amplify-field-group {
+  background-color: #fff6f9 !important;
+}
+
+.amplify-surface {
+  background-color: #fff6f9 !important;
+}
+
+.amplify-view {
+  background-color: #fff6f9 !important;
+}
+
+.amplify-_fullscreen {
+  background-color: #fff6f9 !important;
+}
+
+.amplify-form {
+  background-color: #fff6f9 !important;
+}
+
+/* Target the white box specifically */
+.amplify-authenticator [data-amplify-authenticator-signin="true"] {
+  background-color: #fff6f9 !important;
+}
+
+.amplify-authenticator [data-amplify-container="true"] {
+  background-color: #fff6f9 !important;
+}
+
+.amplify-box {
+  background-color: #fff6f9 !important;
+}
+/* Add these to your existing Amplify overrides in globals.css */
+
+.amplify-tabs {
+  background-color: #fff6f9 !important;
+}
+
+.amplify-tabs-item {
+  background-color: #fff6f9 !important;
+}
+
+.amplify-section {
+  background-color: #fff6f9 !important;
+}
+
+.amplify-tabs__content {
+  background-color: #fff6f9 !important;
+}
+
+/* Target the main form container */
+[data-amplify-form] {
+  background-color: #fff6f9 !important;
+}
+
+/* Target any remaining white surfaces */
+[data-amplify-container] {
+  background-color: #fff6f9 !important;
+}
+
+/* Target the authentication form wrapper */
+[data-amplify-auth-container] {
+  background-color: #fff6f9 !important;
+}
+
+/* Force all divs within the authenticator to have the same background */
+.amplify-authenticator div {
+  background-color: #fff6f9 !important;
+}
+.amplify-card {
+  background-color: #fff6f9 !important;
+  box-shadow: 0 0 10px #ff00ff !important;
+  border: 4px solid #ff00ff !important;
+  border-radius: 8px !important;
+}
+
+/* In case the card class doesn't catch it, target the container as well */
+.amplify-authenticator {
+  background-color: #fff6f9 !important;
+  box-shadow: 0 0 10px #ff00ff !important;
+  border: 4px solid #ff00ff !important;
+  border-radius: 8px !important;
+}
+
+/* And target any potential wrapper */
+[data-amplify-authenticator] {
+  background-color: #fff6f9 !important;
+  box-shadow: 0 0 10px #ff00ff !important;
+  border: 4px solid #ff00ff !important;
+  border-radius: 8px !important;
+}
+
+/* Your existing phone frame styles */
 .phone-frame {
   position: relative;
   width: 320px;
@@ -52,4 +194,3 @@ body {
   overflow: hidden;
   position: relative;
 }
-

@@ -101,6 +101,7 @@ export default function Page() {
   const [usernameError, setUsernameError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<AmbassadorUser>>({
     tiktokUsername: '',  // 
 });
@@ -502,33 +503,43 @@ export default function Page() {
             <MessageDashboard />
           </div>
         );
-        case 'profile':
+        case 'profile':       
           return (
             <div className="p-6 max-w-4xl mx-auto">
-              <form className="space-y-8" onSubmit={(e) => e.preventDefault()}>
-                   {/* Profile Picture Section */}
-                <div className="bg-#fff6f9 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-14 mb-4">
-                  <div className="flex items-center gap-2"> {/* Added flex container */}
-                    <div> {/* Profile picture container */}
-                      <DomeProfilePicture 
-                        profileImage={profileImage}
-                        isLoading={imageLoading}
-                        size="md"
-                        onImageUpload={handleImageUpload}
-                        onImageRemove={handleRemoveProfilePicture}
-                        showUploadButton
-                      /> 
-                    </div>
-                    <p className="text-pink-500 text-xxl"> {/* Increased text size */}
-                      Not to be dramatic, but your being here literally made our whole day sparkle! ⭐
-                    </p>
+              {/* Profile Picture Section - Always visible */}
+              <div className="bg-#fff6f9 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-14 mb-4">
+                <div className="flex items-center gap-2">
+                  <div>
+                    <DomeProfilePicture 
+                      profileImage={profileImage}
+                      isLoading={imageLoading}
+                      size="md"
+                      onImageUpload={handleImageUpload}
+                      onImageRemove={handleRemoveProfilePicture}
+                      showUploadButton
+                    />
                   </div>
+                  <p className="text-pink-500 text-xxl">
+                    Not to be dramatic, but your being here literally made our whole day sparkle! ⭐
+                  </p>
                 </div>
-
-                {/* Personal Information Section */}
-                <div className="bg-#fff6f9 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-6">
-                <h2 className="text-lg font-semibold mb-4">Personal Information</h2>
-                  <div className="space-y-6">
+              </div>
+        
+              {/* Personal Information Section */}
+              <div className="bg-#fff6f9 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-6 relative">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold">Personal Information</h2>
+                  <button
+                    onClick={() => setIsEditing(!isEditing)}
+                    className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
+                  >
+                    {isEditing ? 'Cancel' : 'Edit'}
+                  </button>
+                </div>
+        
+                {isEditing ? (
+                  // Edit Mode - Form
+                  <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
                     {/* Username field */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -546,160 +557,207 @@ export default function Page() {
                       {usernameError && (
                         <p className="mt-1 text-sm text-red-500">{usernameError}</p>
                       )}
-                    </div>  
-                  </div>
-                </div>
-
-                {/* First and Last Names */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      First Name
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full p-2 border rounded"
-                      value={formData?.firstName || ''}
-                      onChange={(e) => handleInputChange('firstName', e.target.value)}
-                      placeholder="Enter first name"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Last Name
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full p-2 border rounded"
-                      value={formData?.lastName || ''}
-                      onChange={(e) => handleInputChange('lastName', e.target.value)}
-                      placeholder="Enter last name"
-                    />
-                  </div>
-                </div>
-
-                {/* And update the Address Section inputs*/}
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Street Address
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full p-2 border rounded"
-                      value={formData?.streetAddress || ''}
-                      onChange={(e) => handleInputChange('streetAddress', e.target.value)}
-                      placeholder="Enter street address"
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        City
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full p-2 border rounded"
-                        value={formData?.city || ''}
-                        onChange={(e) => handleInputChange('city', e.target.value)}
-                        placeholder="Enter city"
-                      />
                     </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        State
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full p-2 border rounded"
-                        value={formData?.state || ''}
-                        onChange={(e) => handleInputChange('state', e.target.value)}
-                        placeholder="Enter state"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        ZIP Code
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full p-2 border rounded"
-                        value={formData?.zipCode || ''}
-                        onChange={(e) => handleInputChange('zipCode', e.target.value)}
-                        placeholder="Enter ZIP code"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Country
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full p-2 border rounded"
-                        value={formData?.country || ''}
-                        onChange={(e) => handleInputChange('country', e.target.value)}
-                        placeholder="Enter country"
-                      />
-                    </div>
-                  </div>
-                </div>      
         
-                {/* Save Changes Button */}
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={handleSaveChanges}
-                    className="px-6 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 
-                            flex items-center gap-2"
-                  >
-                    Save Changes
-                    <Link2 size={20} />
-                  </button>
-                </div>
-              </form>
+                    {/* First and Last Names */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          First Name
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded"
+                          value={formData?.firstName || ''}
+                          onChange={(e) => handleInputChange('firstName', e.target.value)}
+                          placeholder="Enter first name"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Last Name
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded"
+                          value={formData?.lastName || ''}
+                          onChange={(e) => handleInputChange('lastName', e.target.value)}
+                          placeholder="Enter last name"
+                        />
+                      </div>
+                    </div>
+        
+                    {/* Address Fields */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Street Address
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full p-2 border rounded"
+                        value={formData?.streetAddress || ''}
+                        onChange={(e) => handleInputChange('streetAddress', e.target.value)}
+                        placeholder="Enter street address"
+                      />
+                    </div>
+        
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          City
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded"
+                          value={formData?.city || ''}
+                          onChange={(e) => handleInputChange('city', e.target.value)}
+                          placeholder="Enter city"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          State
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded"
+                          value={formData?.state || ''}
+                          onChange={(e) => handleInputChange('state', e.target.value)}
+                          placeholder="Enter state"
+                        />
+                      </div>
+                    </div>
+        
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          ZIP Code
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded"
+                          value={formData?.zipCode || ''}
+                          onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                          placeholder="Enter ZIP code"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Country
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded"
+                          value={formData?.country || ''}
+                          onChange={(e) => handleInputChange('country', e.target.value)}
+                          placeholder="Enter country"
+                        />
+                      </div>
+                    </div>
+        
+                    {/* Save Button */}
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleSaveChanges();
+                          setIsEditing(false);
+                        }}
+                        className="px-6 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 
+                                flex items-center gap-2"
+                      >
+                        Save Changes
+                        <Link2 size={20} />
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  // View Mode - Display Only
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500">Username</h3>
+                      <p className="mt-1">{userData?.username || 'Not set'}</p>
+                    </div>
+        
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">First Name</h3>
+                        <p className="mt-1">{userData?.firstName || 'Not set'}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Last Name</h3>
+                        <p className="mt-1">{userData?.lastName || 'Not set'}</p>
+                      </div>
+                    </div>
+        
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500">Address</h3>
+                      <p className="mt-1">{userData?.streetAddress || 'Not set'}</p>
+                    </div>
+        
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">City</h3>
+                        <p className="mt-1">{userData?.city || 'Not set'}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">State</h3>
+                        <p className="mt-1">{userData?.state || 'Not set'}</p>
+                      </div>
+                    </div>
+        
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">ZIP Code</h3>
+                        <p className="mt-1">{userData?.zipCode || 'Not set'}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Country</h3>
+                        <p className="mt-1">{userData?.country || 'Not set'}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+        
               {/* FAQ Dropdown Section */}
-            <div className="mt-8">
-              <FAQDropdown />
-            </div>
+              <div className="mt-8">
+                <FAQDropdown />
+              </div>
             </div>
           );
-        case 'community':
-          return (
-            <div className="h-screen flex flex-col bg-pink-50">
-              <AmbassadorSpotlight />
-
-            <div className="min-h-screen bg-gray-100 py-8">
-              {isLoading && (
-                <div className="flex items-center justify-center h-[70vh]">
-                  <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-pink-500" />
-                </div>
-              )}
         
-              {error && (
-                <div className="flex items-center justify-center h-[70vh]">
-                  <p className="text-red-500">{error}</p>
-                </div>
-              )}
-        
-              {!isLoading && !error && communityPosts.length === 0 && (
-                <div className="flex items-center justify-center h-[70vh]">
-                  <p className="text-gray-500">No posts yet</p>
-                </div>
-              )}
-        
-              {!isLoading && !error && communityPosts.length > 0 && (
-                <div className="container mx-auto px-4">
-                  {communityPosts.map((post, index) => (
-                    <div key={post.id} className="mb-16">
-                      <div className="phone-frame">
-                        <div className="phone-screen">
+          case 'community':
+            return (
+              <div className="h-screen flex flex-col bg-pink-50">
+                <AmbassadorSpotlight />
+          
+                <div className="min-h-screen bg-gray-100 py-8">
+                  {isLoading && (
+                    <div className="flex items-center justify-center h-[70vh]">
+                      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-pink-500" />
+                    </div>
+                  )}
+            
+                  {error && (
+                    <div className="flex items-center justify-center h-[70vh]">
+                      <p className="text-red-500">{error}</p>
+                    </div>
+                  )}
+            
+                  {!isLoading && !error && communityPosts.length === 0 && (
+                    <div className="flex items-center justify-center h-[70vh]">
+                      <p className="text-gray-500">No posts yet</p>
+                    </div>
+                  )}
+            
+                  {!isLoading && !error && communityPosts.length > 0 && (
+                    <div className="container mx-auto px-4">
+                      {communityPosts.map((post, index) => (
+                        <div key={post.id} className="mb-16 relative max-w-md mx-auto rounded-lg overflow-hidden shadow-lg">
                           <video
                             ref={el => {
                               if (el) videoRefs.current[post.id] = el;
@@ -713,7 +771,7 @@ export default function Page() {
                             <source src={post.mediaUrl} type="video/mp4" />
                             Your browser does not support the video tag.
                           </video>
-
+          
                           {/* Overlay for post information */}
                           <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
                             <div className="flex items-center gap-3 mb-2">
@@ -728,7 +786,7 @@ export default function Page() {
                             </div>
                             <p className="text-white text-sm">{post.caption}</p>
                           </div>
-        
+          
                           {/* Interaction buttons */}
                           <div className="absolute right-4 bottom-20 flex flex-col gap-4">
                             <button className="bg-pink-500/80 p-3 rounded-full text-white hover:bg-pink-600 transition-colors">
@@ -740,26 +798,19 @@ export default function Page() {
                               <Star size={20} />
                               <span className="text-xs block mt-1">{post.points || 0}</span>
                             </button>
-
+          
                             <button className="bg-pink-500/80 p-3 rounded-full text-white hover:bg-pink-600 transition-colors">
                               <Share2 size={20} />
                             </button>
                           </div>
-                        <div className="w-12 h-12 bg-pink-500/80 hover:bg-pink-500 rounded-full flex items-center justify-center backdrop-blur-sm">
-                      <Share2 
-                        className="text-white"
-                        size={24}
-                      />
+                        </div>
+                      ))}
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
-              ))}
-            </div>
-            )}
-          </div>
-        </div>
-        );
+            );
+          
         
         case 'game':
         return (
