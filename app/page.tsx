@@ -771,7 +771,7 @@ export default function Page() {
             
                   {!isLoading && !error && communityPosts.length > 0 && (
                     <div className="container mx-auto px-4">
-                      {communityPosts.map((post, index) => (
+                      {communityPosts.map((post) => (
                         <div key={post.id} className="mb-16 relative max-w-md mx-auto rounded-lg overflow-hidden shadow-lg">
                           <video
                             ref={el => {
