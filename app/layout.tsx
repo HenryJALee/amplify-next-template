@@ -88,7 +88,7 @@ function RootLayout({ children }: RootLayoutProps) {
                                         width={200}
                                         height={200}
                                         priority
-                                        onError={(e: any) => {
+                                        onError={() => {
                                           console.error('Icon failed to load');
                                           // Add fallback if needed
                                         }}
