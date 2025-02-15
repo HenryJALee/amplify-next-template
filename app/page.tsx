@@ -28,6 +28,12 @@ import VideoPost from './components/VideoPost';
 
 
 
+
+
+
+
+
+
 Amplify.configure(outputs);
 
 // Types for our data structures
@@ -957,6 +963,7 @@ export default function Page() {
   };
 
   return (
+    
     <div className="flex min-h-screen bg-wonder-pink">
       {/* Sidebar */}
       <div className="w-72 bg-[#fff6f9]">  
