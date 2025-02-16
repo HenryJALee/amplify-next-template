@@ -1,7 +1,11 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
 import { User } from 'lucide-react';
 
-const AmbassadorSpotlight = () => {
+interface AmbassadorSpotlightProps {
+  compact?: boolean;
+}
+
+const AmbassadorSpotlight: React.FC<AmbassadorSpotlightProps> = ({ compact = false }) => {
   const [image, setImage] = useState<File | null>(() => {
     const savedImage = localStorage.getItem('ambassadorImage');
     return savedImage ? new File([savedImage], 'image') : null;
@@ -28,6 +32,32 @@ const AmbassadorSpotlight = () => {
       setPreview(objectUrl);
     }
   };
+
+  const spotlightData = [
+    { question: "What do you create?", answer: "We Make GRWM and Vlogs" },
+    { question: "Signature Scent?", answer: "Sol de Janerio Carioca Crush" },
+    { question: "Favorite influencer?", answer: "Katie Fang" },
+    { question: "Product that gives you Main Character Energy?", answer: "Glow Recipe Toner" },
+    { question: "If you had a scent, what would it be called?", answer: "Tropical Breeze" }
+  ];
+
+  if (compact) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm p-4">
+        <h2 className="text-xl font-bold text-pink-500 flex items-center gap-2 mb-3">
+          Spotlight <span className="text-yellow-400">✨</span>
+        </h2>
+        <div className="space-y-3">
+          {spotlightData.map((item, index) => (
+            <div key={index} className="space-y-1">
+              <h4 className="font-medium text-pink-500">{item.question}</h4>
+              <p className="text-gray-700 text-sm">{item.answer}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p- bg-[#FFF6F9]">
@@ -64,30 +94,12 @@ const AmbassadorSpotlight = () => {
           {/* Q&A Section */}
           <div className="flex-1 bg-white/50 rounded-lg p-6 border-2 border-[#ff00ff] shadow-[0_0_10px_#ff00ff]">
             <div className="space-y-4">
-              <div>
-                <h4 className="text-lg font-semibold text-pink-500">What do you create?</h4>
-                <p className="text-gray-700">We Make GRWM and Vlogs</p>
-              </div>
-              
-              <div>
-                <h4 className="text-lg font-semibold text-pink-500">Signature Scent?</h4>
-                <p className="text-gray-700">Sol de Janerio Carioca Crush</p>
-              </div>
-              
-              <div>
-                <h4 className="text-lg font-semibold text-pink-500">Favorite influencer?</h4>
-                <p className="text-gray-700">Katie Fang</p>
-              </div>
-              
-              <div>
-                <h4 className="text-lg font-semibold text-pink-500">Product that gives you Main Character Energy?</h4>
-                <p className="text-gray-700">Glow Recipe Toner</p>
-              </div>
-              
-              <div>
-                <h4 className="text-lg font-semibold text-pink-500">If you had a scent, what would it be called?</h4>
-                <p className="text-gray-700">Tropical Breeze</p>
-              </div>
+              {spotlightData.map((item, index) => (
+                <div key={index}>
+                  <h4 className="text-lg font-semibold text-pink-500">{item.question}</h4>
+                  <p className="text-gray-700">{item.answer}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
