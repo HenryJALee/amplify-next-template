@@ -185,3 +185,10 @@ body {
   overflow: hidden;
   position: relative;
 }
+/* 🔹 Optimize Video Performance */
+video {
+  will-change: transform, opacity; /* ✅ Helps browser optimize rendering */
+  transform: translateZ(0); /* ✅ Forces GPU acceleration */
+  object-fit: cover; /* ✅ Prevents unnecessary resizing */
+  backface-visibility: hidden; /* ✅ Reduces flickering */
+}

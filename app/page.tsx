@@ -24,8 +24,10 @@ import AmbassadorSpotlight from './components/AmbassadorSpotlight';
 import WonderWheel from './components/WonderWheel';;
 import FAQDropdown from './components/FAQDropdown';
 import VideoPost from './components/VideoPost';
-import { CommunityPostType } from './types/communitypost';
-import { User } from './types/user';
+import MobileNav from './components/MobileNav';
+import MobileDashboard from "./components/MobileDashboard";
+
+
 
 Amplify.configure(outputs);
 
@@ -37,6 +39,21 @@ type Activity = {
   date: string;
 };
 
+// Update User type
+type User = {
+  id: string;
+  cognitoId: string | null;
+  username?: string | null;  // Make username optional
+  firstName?: string | null;
+  lastName?: string | null;
+  streetAddress?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipCode?: string | null;
+  country?: string | null;
+  profileImageKey?: string | null;
+};
+
 type Ambassador = {
   name: string;
   username: string;
@@ -44,6 +61,22 @@ type Ambassador = {
   tier: string;
   discountCode: string;
   recentActivity: Activity[];
+};
+
+type Nullable<T> = T | null;
+
+type CommunityPostType = {
+  id: Nullable<string>;
+  creator: Nullable<string>;
+  mediaType: "video" | null;
+  mediaUrl: Nullable<string>;
+  mediaKey: Nullable<string>;
+  caption: Nullable<string>;
+  likes: Nullable<number>;
+  points: Nullable<number>;
+  createdAt: Nullable<string>;
+  updatedAt: string;
+  creatorProfileImage?: string;
 };
 
 
@@ -71,6 +104,7 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [formData, setFormData] = useState<Partial<AmbassadorUser>>({
     tiktokUsername: '',  // 
 });
@@ -205,6 +239,14 @@ export default function Page() {
 
   // Add refs for video elements
   const videoRefs = useRef<{ [key: string]: HTMLVideoElement }>({});
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -293,13 +335,44 @@ export default function Page() {
             } finally {
                 setIsLoading(false);
             }
+          }
+      };
+      fetchPosts();
+  }, [activeSection]);
+
+  // Add this near your other useEffect hooks
+  useEffect(() => {
+    if (isMobile) {
+      const loadMobileVideos = async () => {
+        try {
+          // Force reload community posts when switching to mobile
+          if (activeSection === 'community' || activeSection === 'home') {
+            const response = await listCommunityPosts();
+            if (response.data) {
+              const posts = await Promise.all(response.data.map(async (post) => {
+                if (post.mediaKey) {
+                  const signedURL = await getUrl({
+                    key: post.mediaKey,
+                    options: {
+                      accessLevel: 'guest',
+                      validateObjectExistence: true
+                    }
+                  });
+                  post.mediaUrl = signedURL.url.href;
+                }
+                return post;
+              }));
+              setCommunityPosts(posts);
+            }
+          }
+        } catch (error) {
+          console.error('Error loading mobile videos:', error);
         }
-    };
+      };
 
-    fetchPosts();
-}, [activeSection]);
-
-
+      loadMobileVideos();
+    }
+  }, [isMobile, activeSection]);
   
   // Add intersection observer to handle video playback
   useEffect(() => {
@@ -927,6 +1000,90 @@ export default function Page() {
   };
 
   return (
+   <>
+    {isMobile ? (
+      // Mobile Layout
+      <div className="min-h-screen bg-wonder-pink">
+        <MobileNav
+          activeSection={activeSection}
+          setActiveSection={setActiveSection}
+          userData={userData}
+          ambassador={ambassador}
+          profileImageUrl={profileImage?.url ?? null}
+          handleSignOut={handleSignOut}
+          setShowVideoUploader={setShowVideoUploader}
+        />
+        
+        <main className="pt-16"> {/* Add padding for the fixed header */}
+        {activeSection === 'home' && (
+          <div className="min-h-screen bg-pink-50">
+            <div className="p-4">
+              <MobileDashboard
+                ambassador={ambassador}
+                setShowVideoUploader={setShowVideoUploader}
+                communityPosts={communityPosts}
+                videoRefs={videoRefs}
+                currentlyPlaying={currentlyPlaying}
+                setCurrentlyPlaying={setCurrentlyPlaying}
+                activeSection="home"
+              />
+            </div>
+          </div>
+        )}
+
+        {activeSection === 'community' && (
+          <div className="min-h-screen bg-pink-50">
+            <AmbassadorSpotlight />
+            <div className="container mx-auto px-4">
+              {isLoading ? (
+                <div className="flex items-center justify-center h-[70vh]">
+                  <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-pink-500" />
+                </div>
+              ) : communityPosts.map((post) => (
+                <div key={post.id} className="mb-8">
+                  <VideoPost
+                    post={post}
+                    videoRefs={videoRefs}
+                    currentlyPlaying={currentlyPlaying}
+                    setCurrentlyPlaying={setCurrentlyPlaying}
+                    style={{ maxWidth: '100%', height: 'auto' }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+          
+          {activeSection === 'messages' && (
+            <div className="min-h-screen bg-pink-50">
+              <MessageDashboard />
+            </div>
+          )}
+          
+          {activeSection === 'profile' && (
+            <div className="min-h-screen bg-pink-50 p-4">
+              <DomeProfilePicture
+                profileImage={profileImage}
+                isLoading={imageLoading}
+                size="md"
+                onImageUpload={handleImageUpload}
+                onImageRemove={handleRemoveProfilePicture}
+                showUploadButton
+              />
+              {/* Rest of your profile content */}
+              {/* You can reuse your existing profile form/view here */}
+            </div>
+          )}
+          
+          {activeSection === 'game' && (
+            <div className="min-h-screen bg-pink-50 p-4">
+              <WonderWheel />
+            </div>
+          )}
+        </main>
+      </div>
+    ) : (
     <div className="flex min-h-screen bg-wonder-pink">
       {/* Sidebar */}
       <div className="w-72 bg-[#fff6f9]">  
@@ -1006,7 +1163,15 @@ export default function Page() {
         {renderContent()}
       </div>
     </div>
-  
+    )}
+    {/* Video Uploader Modal - Available in both layouts */}
+    {showVideoUploader && (
+      <VideoUploader
+        onUploadComplete={handleVideoUploadComplete}
+        onClose={() => setShowVideoUploader(false)}
+      />
+    )}
+  </>
 
   );
 }
