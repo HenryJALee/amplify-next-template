@@ -16,7 +16,7 @@ interface MobileNavProps {
     name: string;
     tier: string;
   };
-  profileImage: string | null;
+  profileImageUrl: string | null;
   handleSignOut: () => void;
   setShowVideoUploader: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -26,7 +26,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
   setActiveSection,
   userData,
   ambassador,
-  profileImage,
+  profileImageUrl,
   handleSignOut,
   setShowVideoUploader
 }) => {
@@ -72,9 +72,9 @@ const MobileNav: React.FC<MobileNavProps> = ({
         {/* Profile Section */}
         <div className="flex items-center space-x-3 mb-6 p-4 bg-pink-50 rounded-lg">
           <div className="w-12 h-12 rounded-full overflow-hidden">
-            {profileImage ? (
+            {profileImageUrl ? (
               <img 
-                src={profileImage}
+                src={profileImageUrl}
                 alt="Profile"
                 className="w-full h-full object-cover"
               />

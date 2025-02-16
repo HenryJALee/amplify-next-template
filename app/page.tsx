@@ -25,12 +25,8 @@ import WonderWheel from './components/WonderWheel';;
 import FAQDropdown from './components/FAQDropdown';
 import VideoPost from './components/VideoPost';
 import MobileNav from './components/MobileNav';
-
-
-
-
-
-
+import ResponsiveLayout from './components/ResponsiveLayout';
+import MobileDashboard from "./components/MobileDashboard";
 
 
 
@@ -971,7 +967,84 @@ export default function Page() {
   };
 
   return (
-    
+   <>
+    {isMobile ? (
+      // Mobile Layout
+      <div className="min-h-screen bg-wonder-pink">
+        <MobileNav
+          activeSection={activeSection}
+          setActiveSection={setActiveSection}
+          userData={userData}
+          ambassador={ambassador}
+          profileImageUrl={profileImage?.url ?? null}
+          handleSignOut={handleSignOut}
+          setShowVideoUploader={setShowVideoUploader}
+        />
+        
+        <main className="pt-16"> {/* Add padding for the fixed header */}
+          {activeSection === 'home' && (
+            <div className="min-h-screen bg-pink-50">
+              <div className="p-4">
+                {/* Reuse your existing MobileDashboard component */}
+                <MobileDashboard
+                  ambassador={ambassador}
+                  setShowVideoUploader={setShowVideoUploader}
+                  communityPosts={communityPosts}
+                  videoRefs={videoRefs}
+                  currentlyPlaying={currentlyPlaying}
+                  setCurrentlyPlaying={setCurrentlyPlaying}
+                />
+              </div>
+            </div>
+          )}
+          
+          {activeSection === 'community' && (
+            <div className="min-h-screen bg-pink-50">
+              <AmbassadorSpotlight />
+              {/* Your existing community content */}
+              <div className="container mx-auto px-4">
+                {communityPosts.map((post) => (
+                  <VideoPost
+                    key={post.id}
+                    post={post}
+                    videoRefs={videoRefs}
+                    currentlyPlaying={currentlyPlaying}
+                    setCurrentlyPlaying={setCurrentlyPlaying}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {activeSection === 'messages' && (
+            <div className="min-h-screen bg-pink-50">
+              <MessageDashboard />
+            </div>
+          )}
+          
+          {activeSection === 'profile' && (
+            <div className="min-h-screen bg-pink-50 p-4">
+              <DomeProfilePicture
+                profileImage={profileImage}
+                isLoading={imageLoading}
+                size="md"
+                onImageUpload={handleImageUpload}
+                onImageRemove={handleRemoveProfilePicture}
+                showUploadButton
+              />
+              {/* Rest of your profile content */}
+              {/* You can reuse your existing profile form/view here */}
+            </div>
+          )}
+          
+          {activeSection === 'game' && (
+            <div className="min-h-screen bg-pink-50 p-4">
+              <WonderWheel />
+            </div>
+          )}
+        </main>
+      </div>
+    ) : (
     <div className="flex min-h-screen bg-wonder-pink">
       {/* Sidebar */}
       <div className="w-72 bg-[#fff6f9]">  
@@ -1051,7 +1124,15 @@ export default function Page() {
         {renderContent()}
       </div>
     </div>
-  
+    )}
+    {/* Video Uploader Modal - Available in both layouts */}
+    {showVideoUploader && (
+      <VideoUploader
+        onUploadComplete={handleVideoUploadComplete}
+        onClose={() => setShowVideoUploader(false)}
+      />
+    )}
+  </>
 
   );
 }
