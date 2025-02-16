@@ -57,7 +57,7 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
             setActiveSection={setActiveSection}
             userData={userData}
             ambassador={ambassador}
-            profileImage={profileImage}
+            profileImageUrl={profileImage}
             handleSignOut={handleSignOut}
             setShowVideoUploader={setShowVideoUploader}
           />

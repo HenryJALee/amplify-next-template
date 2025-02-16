@@ -89,7 +89,7 @@ function RootLayout({ children }: RootLayoutProps) {
                                     width={300}
                                     height={104}
                                     priority
-                                    onError={(e: any) => {
+                                    onError={() => {
                                       console.error('Logo failed to load');
                                     }}
                                   />
@@ -101,7 +101,7 @@ function RootLayout({ children }: RootLayoutProps) {
                                     width={150}
                                     height={150}
                                     priority
-                                    onError={(e: any) => {
+                                    onError={() => {
                                       console.error('Icon failed to load');
                                     }}
                                   />

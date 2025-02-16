@@ -25,7 +25,6 @@ import WonderWheel from './components/WonderWheel';;
 import FAQDropdown from './components/FAQDropdown';
 import VideoPost from './components/VideoPost';
 import MobileNav from './components/MobileNav';
-import ResponsiveLayout from './components/ResponsiveLayout';
 import MobileDashboard from "./components/MobileDashboard";
 
 

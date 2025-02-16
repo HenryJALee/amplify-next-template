@@ -46,7 +46,6 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
   setShowVideoUploader,
   communityPosts,
   videoRefs,
-  currentlyPlaying,
   setCurrentlyPlaying
 }) => {
   return (
