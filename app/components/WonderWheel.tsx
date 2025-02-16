@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { generateClient } from "aws-amplify/api";
-import { post } from 'aws-amplify/api';
 import type { Schema } from "@/amplify/data/resource";
 import { DailyScentFortune } from './DailyScentFortune';
 import { getCurrentUser } from 'aws-amplify/auth';
@@ -91,13 +90,6 @@ const scentRecommendations: Record<string, ScentRecommendation> = {
     personality: "Your elegant and timeless taste deserves an equally sophisticated scent. This refined fragrance perfectly captures your appreciation for enduring beauty and subtle luxury."
   }
 };
-// Types
-type PrizeRecord = {
-  id: string;
-  weekId: string;  // Format: '2024-W1', '2024-W2', etc.
-  winningTime: string;
-  userId: string;
-};
 
 // Utility function to get current week identifier
 const getCurrentWeekId = () => {
@@ -162,7 +154,7 @@ const generateSpinResult = async (): Promise<SlotIcon[]>  => {
 };
 
 const WonderWheel = () => {
-  const SPINS_ALLOWED = 300;
+  const SPINS_ALLOWED = 3;
   const [isSpinning, setIsSpinning] = useState(false);
   const [slots, setSlots] = useState<SlotIcon[]>(['palm', 'star', 'burst']);
   const [lastPlayTime, setLastPlayTime] = useState<number | null>(null);
@@ -201,8 +193,8 @@ const WonderWheel = () => {
 
   const checkWin = (result: SlotIcon[]) => {
     // Check for three matching icons
-    return true;
-    //return result[0] === result[1] && result[1] === result[2];
+    //return true;
+    return result[0] === result[1] && result[1] === result[2];
     
   };
 

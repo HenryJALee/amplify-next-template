@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Heart, Star, Share2 } from 'lucide-react';
 
 type PostType = {
