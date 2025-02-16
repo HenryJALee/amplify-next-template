@@ -201,7 +201,8 @@ const WonderWheel = () => {
 
   const checkWin = (result: SlotIcon[]) => {
     // Check for three matching icons
-    return result[0] === result[1] && result[1] === result[2];
+    return true;
+    //return result[0] === result[1] && result[1] === result[2];
     
   };
 

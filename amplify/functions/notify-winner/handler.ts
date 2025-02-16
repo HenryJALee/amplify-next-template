@@ -5,24 +5,28 @@ const ses = new SESClient({ region: 'us-east-1' }); // or your preferred region
 
 export const handler = async (event: any) => {
   try {
-    const { userId, prize } = JSON.parse(event.body);
+    console.log('Received event:', event);
+    const args = event.arguments;
+    console.log('Received arguments:', args);
+
+    const { userName } = args.userName
 
     // Send email using SES
     const params = {
       Destination: {
-        ToAddresses: ['admin@yourdomain.com'], // Replace with your email
+        ToAddresses: ['prince@thewonderverselabs.com'], // Replace with your email
       },
       Message: {
         Body: {
           Text: {
-            Data: `New winner: User ${userId} has won a Pink Crop Top`,
+            Data: `New winner: User ${userName} has won a Pink Crop Top`,
           },
         },
         Subject: {
           Data: 'New Wonder Wheel Winner!',
         },
       },
-      Source: 'from@yourdomain.com', // Replace with your verified SES email
+      Source: 'prince@thewonderverselabs.com', // Replace with your verified SES email
     };
 
     await ses.send(new SendEmailCommand(params));
@@ -34,7 +38,7 @@ export const handler = async (event: any) => {
         "Access-Control-Allow-Origin": "*"
       },
       body: JSON.stringify({
-        message: `Successfully notified about winner ${userId}`
+        message: `Successfully notified about winner ${userName}`
       })
     };
   } catch (error) {
