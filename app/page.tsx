@@ -654,10 +654,8 @@ export default function Page() {
         );
         case 'profile':       
           return (
-            <div className="min-h-screen w-full bg-[#fff6f9]">
               <div className="p-4 md:p-6 max-w-4xl mx-auto"> {/* Updated padding for mobile */}
               {/* Profile Picture Section - Always visible */}
-<<<<<<< HEAD
               <div className="bg-#fff6f9 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-14 mb-4">
                 <div className="flex items-center gap-2">
                   <div>
@@ -671,23 +669,6 @@ export default function Page() {
                       showUploadButton
                     />
                     */}
-=======
-                <div className="bg-white rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-6 md:p-14 mb-4 border border-pink-200">
-                <div className="flex flex-col md:flex-row items-center gap-4"> {/* Made flex column on mobile */}
-                    <div>
-                      <DomeProfilePicture 
-                        profileImage={profileImage}
-                        isLoading={imageLoading}
-                        size="md"
-                        onImageUpload={handleImageUpload}
-                        onImageRemove={handleRemoveProfilePicture}
-                        showUploadButton
-                      />
-                    </div>
-                    <p className="text-pink-500 text-lg md:text-xxl text-center md:text-left"> {/* Adjusted text size and alignment */}
-                      Not to be dramatic, but your being here literally made our whole day sparkle! ⭐
-                    </p>
->>>>>>> c7addad9173e23969a9d4fbdba5225ce26b80a1d
                   </div>
                 </div>
 
