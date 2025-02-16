@@ -24,7 +24,7 @@ import AmbassadorSpotlight from './components/AmbassadorSpotlight';
 import WonderWheel from './components/WonderWheel';;
 import FAQDropdown from './components/FAQDropdown';
 import VideoPost from './components/VideoPost';
-
+import MobileNav from './components/MobileNav';
 
 
 
@@ -109,6 +109,7 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [formData, setFormData] = useState<Partial<AmbassadorUser>>({
     tiktokUsername: '',  // 
 });
@@ -243,7 +244,14 @@ export default function Page() {
 
   // Add refs for video elements
   const videoRefs = useRef<{ [key: string]: HTMLVideoElement }>({});
-
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
   useEffect(() => {
     const fetchPosts = async () => {
         console.log("🔄 fetchPosts() function is running..."); // ✅ Check if function runs

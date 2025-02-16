@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import Image from 'next/image';
+import WONDERLOGO_UPDATED from '../../public/icons/Wonderverse-logo-update.png';
 
 // Define the types for the props
 interface MobileNavProps {
@@ -20,14 +21,14 @@ interface MobileNavProps {
   setShowVideoUploader: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const MobileNav: React.FC<MobileNavProps> = ({ 
-  activeSection, 
-  setActiveSection, 
-  userData, 
+const MobileNav: React.FC<MobileNavProps> = ({
+  activeSection,
+  setActiveSection,
+  userData,
   ambassador,
   profileImage,
   handleSignOut,
-  setShowVideoUploader 
+  setShowVideoUploader
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -39,7 +40,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
       <div className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50 px-4 py-2">
         <div className="flex items-center justify-between">
           <Image 
-            src="/icons/Wonderverse-logo-update.png"
+            src={WONDERLOGO_UPDATED}
             alt="Wonder Logo"
             width={120}
             height={32}
@@ -54,9 +55,17 @@ const MobileNav: React.FC<MobileNavProps> = ({
         </div>
       </div>
 
+      {/* Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/20 z-40"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
       {/* Mobile Menu */}
       <div className={`
-        fixed inset-0 bg-white z-40 transition-transform duration-300 ease-in-out
+        fixed inset-0 bg-white z-50 transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         pt-16 pb-6 px-4
       `}>
@@ -65,8 +74,8 @@ const MobileNav: React.FC<MobileNavProps> = ({
           <div className="w-12 h-12 rounded-full overflow-hidden">
             {profileImage ? (
               <img 
-                src={profileImage} 
-                alt="Profile" 
+                src={profileImage}
+                alt="Profile"
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -101,7 +110,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
               className={`
                 w-full flex items-center gap-3 p-4 rounded-lg transition
                 ${activeSection === item.key 
-                  ? 'bg-pink-500 text-white' 
+                  ? 'bg-pink-500 text-white'
                   : 'text-gray-700 hover:bg-pink-50'
                 }
               `}
@@ -110,7 +119,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
               <span>{item.label}</span>
             </button>
           ))}
-          
+
           {/* Add Content Button */}
           <button
             onClick={() => {
