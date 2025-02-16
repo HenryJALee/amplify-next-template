@@ -659,6 +659,7 @@ export default function Page() {
               <div className="bg-#fff6f9 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-14 mb-4">
                 <div className="flex items-center gap-2">
                   <div>
+                    {/*
                     <DomeProfilePicture 
                       profileImage={profileImage}
                       isLoading={imageLoading}
@@ -667,6 +668,7 @@ export default function Page() {
                       onImageRemove={handleRemoveProfilePicture}
                       showUploadButton
                     />
+                    */}
                   </div>
                   <p className="text-pink-500 text-xxl">
                     Not to be dramatic, but your being here literally made our whole day sparkle! ⭐
