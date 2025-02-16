@@ -4,7 +4,6 @@ import { data } from './data/resource';
 import { storage } from './storage/resource';
 import  { notifyWinner } from './functions/notify-winner/resource';
 import * as iam from "aws-cdk-lib/aws-iam"
-import * as ses from "aws-cdk-lib/aws-ses"
 
 const backend = defineBackend({
   auth,
