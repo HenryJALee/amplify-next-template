@@ -247,6 +247,7 @@ export default function Page() {
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
+
   useEffect(() => {
     const fetchPosts = async () => {
         console.log("🔄 fetchPosts() function is running..."); // ✅ Check if function runs
@@ -334,13 +335,44 @@ export default function Page() {
             } finally {
                 setIsLoading(false);
             }
+          }
+      };
+      fetchPosts();
+  }, [activeSection]);
+
+  // Add this near your other useEffect hooks
+  useEffect(() => {
+    if (isMobile) {
+      const loadMobileVideos = async () => {
+        try {
+          // Force reload community posts when switching to mobile
+          if (activeSection === 'community' || activeSection === 'home') {
+            const response = await listCommunityPosts();
+            if (response.data) {
+              const posts = await Promise.all(response.data.map(async (post) => {
+                if (post.mediaKey) {
+                  const signedURL = await getUrl({
+                    key: post.mediaKey,
+                    options: {
+                      accessLevel: 'guest',
+                      validateObjectExistence: true
+                    }
+                  });
+                  post.mediaUrl = signedURL.url.href;
+                }
+                return post;
+              }));
+              setCommunityPosts(posts);
+            }
+          }
+        } catch (error) {
+          console.error('Error loading mobile videos:', error);
         }
-    };
+      };
 
-    fetchPosts();
-}, [activeSection]);
-
-
+      loadMobileVideos();
+    }
+  }, [isMobile, activeSection]);
   
   // Add intersection observer to handle video playback
   useEffect(() => {
@@ -981,40 +1013,45 @@ export default function Page() {
         />
         
         <main className="pt-16"> {/* Add padding for the fixed header */}
-          {activeSection === 'home' && (
-            <div className="min-h-screen bg-pink-50">
-              <div className="p-4">
-                {/* Reuse your existing MobileDashboard component */}
-                <MobileDashboard
-                  ambassador={ambassador}
-                  setShowVideoUploader={setShowVideoUploader}
-                  communityPosts={communityPosts}
-                  videoRefs={videoRefs}
-                  currentlyPlaying={currentlyPlaying}
-                  setCurrentlyPlaying={setCurrentlyPlaying}
-                  activeSection="home" // 
-                />
-              </div>
+        {activeSection === 'home' && (
+          <div className="min-h-screen bg-pink-50">
+            <div className="p-4">
+              <MobileDashboard
+                ambassador={ambassador}
+                setShowVideoUploader={setShowVideoUploader}
+                communityPosts={communityPosts}
+                videoRefs={videoRefs}
+                currentlyPlaying={currentlyPlaying}
+                setCurrentlyPlaying={setCurrentlyPlaying}
+                activeSection="home"
+              />
             </div>
-          )}
-          
-          {activeSection === 'community' && (
-            <div className="min-h-screen bg-pink-50">
-              <AmbassadorSpotlight />
-              {/* Your existing community content */}
-              <div className="container mx-auto px-4">
-                {communityPosts.map((post) => (
+          </div>
+        )}
+
+        {activeSection === 'community' && (
+          <div className="min-h-screen bg-pink-50">
+            <AmbassadorSpotlight />
+            <div className="container mx-auto px-4">
+              {isLoading ? (
+                <div className="flex items-center justify-center h-[70vh]">
+                  <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-pink-500" />
+                </div>
+              ) : communityPosts.map((post) => (
+                <div key={post.id} className="mb-8">
                   <VideoPost
-                    key={post.id}
                     post={post}
                     videoRefs={videoRefs}
                     currentlyPlaying={currentlyPlaying}
                     setCurrentlyPlaying={setCurrentlyPlaying}
+                    style={{ maxWidth: '100%', height: 'auto' }}
                   />
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          )}
+          </div>
+        )}
+
           
           {activeSection === 'messages' && (
             <div className="min-h-screen bg-pink-50">

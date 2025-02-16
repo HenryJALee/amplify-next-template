@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Heart, Star, Share2 } from 'lucide-react';
 
 type PostType = {
@@ -17,7 +17,7 @@ type VideoPostProps = {
   currentlyPlaying: string | null;
   setCurrentlyPlaying: (id: string | null) => void;
   style?: React.CSSProperties;
-  isMobile?: boolean; // Added isMobile prop as optional
+  isMobile?: boolean;
 };
 
 const VideoPost: React.FC<VideoPostProps> = ({ 
@@ -26,15 +26,18 @@ const VideoPost: React.FC<VideoPostProps> = ({
   currentlyPlaying, 
   setCurrentlyPlaying, 
   style = {},
-  isMobile = false // Default value for isMobile
+  isMobile = false 
 }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+
   useEffect(() => {
     if (!post.id) return;
     
     const options = {
       root: null,
-      rootMargin: '0px',
-      threshold: 0.7,
+      rootMargin: '50px',
+      threshold: 0.5,
     };
 
     const observer = new IntersectionObserver((entries) => {
@@ -51,17 +54,18 @@ const VideoPost: React.FC<VideoPostProps> = ({
               }
             }
             
-            if (video.paused) {
+            // Only play if video is loaded
+            if (video.readyState >= 3) {
               await video.play();
               setCurrentlyPlaying(video.id);
             }
           } catch (error) {
             console.error('Error handling video playback:', error);
+            setHasError(true);
           }
         } else {
           try {
             video.pause();
-            video.currentTime = 0;
             if (currentlyPlaying === video.id) {
               setCurrentlyPlaying(null);
             }
@@ -86,24 +90,66 @@ const VideoPost: React.FC<VideoPostProps> = ({
     };
   }, [post.id, currentlyPlaying, setCurrentlyPlaying]);
 
+  const handleVideoLoad = () => {
+    setIsLoading(false);
+    setHasError(false);
+  };
+
+  const handleVideoError = (e: any) => {
+    console.error('Video loading error:', e);
+    setIsLoading(false);
+    setHasError(true);
+  };
+
   return (
     <div 
       className={`relative ${isMobile ? 'mb-4' : 'mb-8'} rounded-lg overflow-hidden shadow-lg`} 
       style={style}
     >
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500" />
+        </div>
+      )}
+      
+      {hasError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+          <div className="text-red-500 text-center p-4">
+            Failed to load video
+            <button 
+              onClick={() => {
+                setIsLoading(true);
+                setHasError(false);
+                const video = videoRefs.current[post.id!];
+                if (video) video.load();
+              }}
+              className="block mt-2 text-pink-500 underline"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
+
       <video
         ref={el => {
           if (el && post.id) {
             videoRefs.current[post.id] = el;
           }
         }}
-        className="w-full h-auto max-w-md aspect-[9/16] object-contain"
+        className="w-full h-auto max-w-md aspect-[9/16] object-contain bg-black"
         loop
         playsInline
         muted
         preload="metadata"
+        onLoadedData={handleVideoLoad}
+        onError={handleVideoError}
+        style={{ opacity: isLoading ? 0 : 1 }}
       >
-        <source src={post.mediaUrl ?? undefined} type="video/mp4" />
+        <source 
+          src={post.mediaUrl ?? undefined} 
+          type="video/mp4" 
+        />
         Your browser does not support the video tag.
       </video>
 
@@ -115,6 +161,7 @@ const VideoPost: React.FC<VideoPostProps> = ({
               src={post.creatorProfileImage || "/default-avatar.png"}
               alt={post.creator ?? "User content"}
               className="w-full h-full object-cover"
+              loading="lazy"
             />
           </div>
           <span className="text-white font-medium">
