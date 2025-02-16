@@ -992,6 +992,7 @@ export default function Page() {
                   videoRefs={videoRefs}
                   currentlyPlaying={currentlyPlaying}
                   setCurrentlyPlaying={setCurrentlyPlaying}
+                  activeSection="home" // 
                 />
               </div>
             </div>

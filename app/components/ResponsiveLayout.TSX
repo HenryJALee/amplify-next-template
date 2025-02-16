@@ -70,6 +70,7 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
                 videoRefs={videoRefs}
                 currentlyPlaying={currentlyPlaying}
                 setCurrentlyPlaying={setCurrentlyPlaying}
+                activeSection={activeSection} 
               />
             )}
             {activeSection !== 'home' && renderContent()}
