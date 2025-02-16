@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Heart, Share2, Link2 } from 'lucide-react';
+import { Link2 } from 'lucide-react';
 import VideoPost from './VideoPost';
 import AmbassadorSpotlight from './AmbassadorSpotlight';
 import WonderWheel from './WonderWheel';
