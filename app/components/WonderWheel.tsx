@@ -14,7 +14,7 @@ interface ScentRecommendation {
 const questions = [
     {
       question: "What's your age range?",
-      options: ["18-24", "25-34", "35-44", "45+"]
+      options: ["18 and under", "18-30", "31-44", "45+"]
     },
     {
       question: "How would you describe your personal style?",

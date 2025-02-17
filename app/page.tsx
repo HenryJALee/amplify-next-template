@@ -35,7 +35,6 @@ Amplify.configure(outputs);
 type Activity = {
   type: string;
   platform?: string;
-  points: number;
   date: string;
 };
 
@@ -57,8 +56,6 @@ type User = {
 type Ambassador = {
   name: string;
   username: string;
-  points: number;
-  tier: string;
   discountCode: string;
   recentActivity: Activity[];
 };
@@ -118,8 +115,6 @@ export default function Page() {
   const [ambassador, setAmbassador] = useState<Ambassador>({
     name: "",
     username: "",
-    points: 0,
-    tier: "",
     discountCode: "",
     recentActivity: []
   });
@@ -169,21 +164,16 @@ export default function Page() {
         setCommunityPosts(prevPosts => [postWithSignedUrl, ...prevPosts]);
       }
       
-      // Add points for uploading content
-      const points = 50;
-      setAmbassador(prev => ({
-        ...prev,
-        points: prev.points + points,
+      setAmbassador({
+        name: response.data[0].firstName || "Ambassador",
+        username: response.data[0].username || "",
+        discountCode: `WONDER${currentUser.username.toUpperCase()}`,
         recentActivity: [
-          {
-            type: 'Post',
-            platform: 'TikTok',
-            points: points,
-            date: new Date().toISOString().split('T')[0]
-          },
-          ...prev.recentActivity
+          { type: "Post", platform: "TikTok", date: "2024-01-25" },
+          { type: "Review", date: "2024-01-24" },
+          { type: "Referral", date: "2024-01-23" }
         ]
-      }));
+      });
 
       setShowVideoUploader(false);
     } catch (error) {
@@ -220,13 +210,11 @@ export default function Page() {
           setAmbassador({
             name: response.data[0].firstName || "Ambassador",
             username: response.data[0].username || "",
-            points: 750,
-            tier: "Wonder Advocate",
             discountCode: `WONDER${currentUser.username.toUpperCase()}`,  // Changed from affiliateLink
             recentActivity: [
-              { type: "Post", platform: "TikTok", points: 50, date: "2024-01-25" },
-              { type: "Review", points: 25, date: "2024-01-24" },
-              { type: "Referral", points: 100, date: "2024-01-23" }
+              { type: "Post", platform: "TikTok", date: "2024-01-25" },
+              { type: "Review", date: "2024-01-24" },
+              { type: "Referral", date: "2024-01-23" }
             ]
           });
         }
@@ -557,12 +545,13 @@ export default function Page() {
                   </div>
                   <p className="text-[#ff47b0]">Whimsical Fragrance meets Clinically Effective and Sensory Friendly Bodycare...And this is where you come in!</p>
                   
-                  <div className="space-y-2 text-'#ff47b0'">
-                    <p><span className="font-medium">TikTok:</span> @wonderverselab</p>
-                    <p><span className="font-medium">Instagram:</span> @wonderverselab, @thewondysociety_</p>
-                    <p><span className="font-medium">YouTube:</span> @thewonderverselabs</p>
-                    <p><span className="font-medium">Lemon8:</span> @thewonderverse</p>
+                  <div className="space-y-2">
+                    <p className="text-[#ff47b0]"><span className="font-medium text-[#ff47b0]">TikTok:</span> @wonderverselab</p>
+                    <p className="text-[#ff47b0]"><span className="font-medium text-[#ff47b0]">Instagram:</span> @wonderverselab, @thewondysociety_</p>
+                    <p className="text-[#ff47b0]"><span className="font-medium text-[#ff47b0]">YouTube:</span> @thewonderverselabs</p>
+                    <p className="text-[#ff47b0]"><span className="font-medium text-[#ff47b0]">Lemon8:</span> @thewonderverse</p>
                   </div>
+
                 </div>
               <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
                 <h3 className="font-semibold mb-2">Discount Code</h3>
@@ -613,7 +602,6 @@ export default function Page() {
                           <p className="font-medium">{activity.type}</p>
                           <p className="text-sm text-gray-500">{activity.date}</p>
                         </div>
-                        <span className="text-pink-500 font-semibold">+{activity.points} points</span>
                       </div>
                     ))}
                   </div>
@@ -1310,7 +1298,6 @@ export default function Page() {
                     onImageRemove={handleRemoveProfilePicture}
             />
             <h2 className="font-bold text-lg">{userData?.username || ambassador.name}</h2>
-            <p className="text-sm text-gray-500">{ambassador.tier}</p>
           </div>
 
           {/* Navigation */}

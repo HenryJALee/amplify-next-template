@@ -3,6 +3,11 @@ import { Menu, X } from 'lucide-react';
 import Image from 'next/image';
 import WONDERLOGO_UPDATED from '../../public/icons/Wonderverse-logo-update.png';
 
+import PinkStar from '../../public/icons/Pink-Star.png';
+import BlueStar from '../../public/icons/Blue-Star.png';
+import GreenStar from '../../public/icons/Green-Star.png';
+import YellowStar from '../../public/icons/Yellow-Star.png';
+
 // Define the types for the props
 interface MobileNavProps {
   activeSection: 'home' | 'community' | 'messages' | 'profile' | 'game';
@@ -14,7 +19,6 @@ interface MobileNavProps {
   } | null;
   ambassador: {
     name: string;
-    tier: string;
   };
   profileImageUrl: string | null;
   handleSignOut: () => void;
@@ -88,18 +92,17 @@ const MobileNav: React.FC<MobileNavProps> = ({
           </div>
           <div>
             <h2 className="font-bold">{userData?.username || ambassador.name}</h2>
-            <p className="text-sm text-gray-500">{ambassador.tier}</p>
           </div>
         </div>
 
         {/* Navigation Links */}
         <nav className="space-y-2">
           {[
-            { icon: "⭐", label: 'Dashboard', key: 'home' },
-            { icon: "💫", label: 'Community', key: 'community' },
-            { icon: "✨", label: 'Updates', key: 'messages' },
-            { icon: "🌟", label: 'Profile', key: 'profile' },
-            { icon: "⚡", label: 'Game', key: 'game' }
+            { icon: PinkStar, label: 'Dashboard', key: 'home' },
+            { icon: BlueStar , label: 'Community', key: 'community' },
+            { icon: GreenStar, label: 'Updates', key: 'messages' },
+            { icon: YellowStar , label: 'Profile', key: 'profile' },
+            { icon: PinkStar, label: 'Game', key: 'game' }
           ].map((item) => (
             <button
               key={item.key}
@@ -115,7 +118,12 @@ const MobileNav: React.FC<MobileNavProps> = ({
                 }
               `}
             >
-              <span>{item.icon}</span>
+              <Image 
+            src={item.icon}
+            alt={`${item.label} icon`}
+            width={24}
+            height={24}
+          />
               <span>{item.label}</span>
             </button>
           ))}
