@@ -1012,6 +1012,7 @@ export default function Page() {
                 currentlyPlaying={currentlyPlaying}
                 setCurrentlyPlaying={setCurrentlyPlaying}
                 activeSection="home"
+                profileImage={profileImage}
               />
             </div>
           </div>

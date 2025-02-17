@@ -40,6 +40,7 @@ interface MobileDashboardProps {
   currentlyPlaying: string | null;
   setCurrentlyPlaying: (id: string | null) => void;
   activeSection: 'home' | 'community' | 'messages' | 'profile' | 'game';
+  profileImage?: { url: string } | null;
 }
 
 const MobileDashboard: React.FC<MobileDashboardProps> = ({
@@ -81,23 +82,26 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
       case 'messages':
         return <MessageDashboard />;
 
-      case 'game':
-        return (
-            <div className="min-h-screen w-full flex items-center justify-center">
-            <WonderWheel />
-          </div>
-        );
-
+        case 'game':
+            return (
+                <div className="min-h-screen pt-20 px-4">
+                  <div className="max-w-[95vw] mx-auto overflow-x-hidden">
+                    <WonderWheel />
+                  </div>
+                </div>
+            );
+            
       case 'home':
       default:
         return (
           <div className="space-y-4 px-4">
             {/* Welcome Card */}
             <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h3 className="font-semibold text-xl text-[#ff47b0] mb-2">
+                
+            <h3 className="font-semibold text-xl text-[#ff47b0] mb-2 text-right">
                 Welcome to our World ✨
               </h3>
-               <p className="text-[#ff47b0]">
+               <p className="text-[#ff47b0] text-right">
                 Whimsical Fragrance meets Clinically Effective and Sensory Friendly Bodycare
               </p>
               
