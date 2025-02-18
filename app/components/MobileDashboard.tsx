@@ -86,7 +86,7 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
               return (
                 <div className="min-h-screen bg-[#fff6f9]">
                   <div className="p-4">
-                    {/* Only Challenges Section */}
+                     {/* Only Challenges Section */}
                     <div className="bg-white rounded-lg shadow-lg p-4">
                       <h2 className="text-xl font-semibold text-pink-500 mb-4">Challenges</h2>
                       <div className="space-y-6">
