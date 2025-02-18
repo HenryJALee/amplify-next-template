@@ -3,6 +3,7 @@ import { generateClient } from "aws-amplify/api";
 import type { Schema } from "@/amplify/data/resource";
 import { DailyScentFortune } from './DailyScentFortune';
 import { getCurrentUser } from 'aws-amplify/auth';
+import PackageDesigner from '../components/PackageDesigner'; 
 
 type SlotIcon = 'palm' | 'star' | 'burst' | 'green' | 'yellow' | 'circle' | 'heart' | 'sparkle';
 

@@ -26,7 +26,7 @@ import FAQDropdown from './components/FAQDropdown';
 import VideoPost from './components/VideoPost';
 import MobileNav from './components/MobileNav';
 import MobileDashboard from "./components/MobileDashboard";
-
+import PackageDesigner from './components/PackageDesigner';
 
 
 Amplify.configure(outputs);
@@ -1055,10 +1055,12 @@ export default function Page() {
           <div className="w-full flex flex-col items-center bg-[#FFF6F9] p-4">
       {/* Wonder Wheel */}
         <WonderWheel />
+      {/* Package Designer */}
+      <PackageDesigner />
 
       {/* Scent Quiz Below */}
-    </div>
-  );       
+        </div>
+      );       
         default:
         return null;
     }
@@ -1348,6 +1350,7 @@ export default function Page() {
           {activeSection === 'game' && (
             <div className="min-h-screen bg-pink-50 p-4">
               <WonderWheel />
+              <PackageDesigner />
             </div>
           )}
         </main>
