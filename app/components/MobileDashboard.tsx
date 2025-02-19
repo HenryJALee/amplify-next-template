@@ -3,7 +3,7 @@ import { Link2 } from 'lucide-react';
 import VideoPost from './VideoPost';
 import AmbassadorSpotlight from './AmbassadorSpotlight';
 import WonderWheel from './WonderWheel';
-import MessageDashboard from './MessageDashboard';
+
 
 interface TouchPosition {
   x: number;
