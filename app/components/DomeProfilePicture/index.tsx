@@ -2,23 +2,24 @@ import React from 'react';
 import { ProfileImageType } from '../../hooks/useProfileImage';
 import { FileUploader } from '../FileUploader';
 
-
 interface DomeProfilePictureProps {
-  profileImage: ProfileImageType | null;
+  profileImage: ProfileImageType | null | string; // Allow string for static paths
   className?: string;
   isLoading?: boolean;
   size?: 'sm' | 'md' | 'lg';
   onImageUpload?: (file: File) => Promise<void>;
   onImageRemove?: () => Promise<void>;
   showUploadButton?: boolean;
+  isStatic?: boolean; // New prop to indicate if this is a static image
 }
 
 const DomeProfilePicture: React.FC<DomeProfilePictureProps> = ({
   profileImage,
-  className='',
+  className = '',
   size = 'md',
   onImageUpload,
-  showUploadButton = false
+  showUploadButton = false,
+  isStatic = false, // Default to false for backward compatibility
 }) => {
   
   const sizeClasses = {
@@ -31,6 +32,14 @@ const DomeProfilePicture: React.FC<DomeProfilePictureProps> = ({
     if (onImageUpload) {
       await onImageUpload(file);
     }
+  };
+
+  // Get the correct image URL based on whether it's static or dynamic
+  const getImageUrl = () => {
+    if (isStatic && typeof profileImage === 'string') {
+      return profileImage;
+    }
+    return (profileImage as ProfileImageType)?.url || '';
   };
 
   return (
@@ -55,9 +64,9 @@ const DomeProfilePicture: React.FC<DomeProfilePictureProps> = ({
                 width="400" 
                 height="500"
               >
-                {profileImage?.url ? (
+                {getImageUrl() ? (
                   <image
-                    href={profileImage.url}
+                    href={getImageUrl()}
                     width="400"
                     height="500"
                     x="0"
@@ -102,7 +111,8 @@ const DomeProfilePicture: React.FC<DomeProfilePictureProps> = ({
             />
           </svg>
         <div>
-          {showUploadButton && onImageUpload && (
+          {/* Only show upload button if not static and showUploadButton is true */}
+          {!isStatic && showUploadButton && onImageUpload && (
             <div className="flex-1">
               <FileUploader
                 onFileSelect={handleFileSelect}
@@ -117,28 +127,13 @@ const DomeProfilePicture: React.FC<DomeProfilePictureProps> = ({
                   >
                     Upload new photo
                   </button>
-                 {/* <p className="mt-2 text-sm text-gray-500">
-                    JPG, PNG or GIF up to 2MB
-                  </p> } 
-                  {profileImage && onImageRemove && (
-                    <button
-                      onClick={onImageRemove}
-                      className="mt-2 text-sm text-red-600 hover:text-red-700 
-                                focus:outline-none focus:underline"
-                    >
-                      Remove photo
-                    </button>
-                  )*/}
                 </div>
               </FileUploader>
             </div>
           )} 
       </div>
     </div>
-  )
+  );
 };
 
 export default DomeProfilePicture;
-
-
-

@@ -27,6 +27,8 @@ import VideoPost from './components/VideoPost';
 import MobileNav from './components/MobileNav';
 import MobileDashboard from "./components/MobileDashboard";
 import PackageDesigner from './components/PackageDesigner';
+import ComingSoonBlock from './components/Coming-soon';
+import Favicon from './components/Favicon';
 
 
 Amplify.configure(outputs);
@@ -581,7 +583,14 @@ export default function Page() {
                 </div>      
               </div>
             </div>
+            
 
+    <div className="p-6 space-y-6">
+   
+   
+      </div>
+      {/* Add Coming Soon Block here */}
+      <ComingSoonBlock />
            {/* Recent Activity */}
            <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
                   <div className="flex justify-between items-center mb-4">
@@ -1068,6 +1077,7 @@ export default function Page() {
 
   return (
    <>
+   <Favicon />
     {isMobile ? (
       // Mobile Layout
       <div className="min-h-screen bg-wonder-pink">
