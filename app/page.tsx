@@ -674,11 +674,6 @@ export default function Page() {
                     </p>
                   </div>
                 </div>
-
-                {/* Add a test element to see if content after DomeProfilePicture renders */}
-                <div className="bg-white p-4 rounded-lg mb-4 border border-pink-200">
-                  <p className="text-pink-500">Test Content - Can you see this?</p>
-                </div>
         
                 {/* Personal Information Section */}
                 <div className="bg-[#fff6f9] rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-4 md:p-6 relative"> {/* Updated padding for mobile */}
