@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, X } from 'lucide-react';
+import { X } from 'lucide-react';
 
 const ReferralChallenge = () => {
   const [emails, setEmails] = useState<string[]>([]);

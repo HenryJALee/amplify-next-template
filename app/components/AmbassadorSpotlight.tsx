@@ -18,7 +18,6 @@ const AmbassadorSpotlight: React.FC<AmbassadorSpotlightProps> = ({
   compact = false, 
   userName = "vlogs.w.s.c"
 }) => {
-  const [preview, setPreview] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
 
   const InitialsAvatar = () => (

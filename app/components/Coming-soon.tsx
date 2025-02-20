@@ -1,7 +1,5 @@
 import React from 'react';
 import Image from 'next/image';
-import DomeProfilePicture from './DomeProfilePicture';
-import { ProfileImageType } from '../hooks/useProfileImage';
 
 // Separate Product Announcement Component
 const ProductAnnouncement = () => {
@@ -71,8 +69,8 @@ const ExperienceSection = () => {
             The Experience
           </h4>
           <p className="text-pink-600 text-lg font-medium">
-            Picture this: You're lounging at an exclusive beach club, surrounded by blooming hibiscus and 
-            sunkissed bergamot. That's the vibe we've bottled up just for you!
+            Picture this: You&apos;re lounging at an exclusive beach club, surrounded by blooming hibiscus and 
+            sunkissed bergamot. That&apos;s the vibe we&apos;ve bottled up just for you!
           </p>
         </div>
         <div className="flex justify-center items-center">
