@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Heart, Star, Share2 } from 'lucide-react';
+import { Star, Share2 } from 'lucide-react';
+import Hls from 'hls.js';
+const customHeart = require('/public/icons/customheart.png');
+
 
 type PostType = {
   id: string | null;
@@ -30,6 +33,26 @@ const VideoPost: React.FC<VideoPostProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+// Like Counter State
+const [likes, setLikes] = useState(post.likes || 0);
+const [isLiked, setIsLiked] = useState(false);
+
+// Like Button Click Handler
+const handleLikeClick = (postId: string | null) => {
+  if (!postId) return;
+
+  if (isLiked) {
+    // Unlike the post
+    setLikes(prev => prev - 1);
+    setIsLiked(false);
+    // TODO: Update backend to decrease like count
+  } else {
+    // Like the post
+    setLikes(prev => prev + 1);
+    setIsLiked(true);
+    // TODO: Update backend to increase like count
+  }
+};
 
   useEffect(() => {
     if (!post.id) return;
@@ -131,27 +154,43 @@ const VideoPost: React.FC<VideoPostProps> = ({
         </div>
       )}
 
-      <video
-        ref={el => {
-          if (el && post.id) {
-            videoRefs.current[post.id] = el;
-          }
-        }}
-        className="w-full h-auto max-w-md aspect-[9/16] object-contain bg-black"
-        loop
-        playsInline
-        muted
-        preload="metadata"
-        onLoadedData={handleVideoLoad}
-        onError={handleVideoError}
-        style={{ opacity: isLoading ? 0 : 1 }}
-      >
-        <source 
-          src={post.mediaUrl ?? undefined} 
-          type="video/mp4" 
-        />
-        Your browser does not support the video tag.
-      </video>
+<video
+  ref={el => {
+    if (el && post.id) {
+      videoRefs.current[post.id] = el;
+    }
+
+    // HLS Integration
+    if (Hls.isSupported() && post.mediaUrl?.endsWith('.m3u8')) {
+      const hls = new Hls();
+      hls.loadSource(post.mediaUrl);
+      if (el instanceof HTMLMediaElement) {
+        hls.attachMedia(el);
+      }      
+
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        el?.play();
+      });
+    } else if (el?.canPlayType('application/vnd.apple.mpegurl')) {
+      // For Safari (iOS & macOS) which supports HLS natively
+      el.src = post.mediaUrl ?? '';
+      el.addEventListener('loadedmetadata', () => {
+        el.play();
+      });
+    }
+  }}
+  className="w-full h-auto max-w-md aspect-[9/16] object-contain bg-black"
+  loop
+  playsInline
+  muted
+  preload="metadata"
+  onLoadedData={handleVideoLoad}
+  onError={handleVideoError}
+  style={{ opacity: isLoading ? 0 : 1 }}
+>
+  Your browser does not support the video tag.
+</video>
+
 
       {/* Overlay for post information */}
       <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
@@ -173,10 +212,19 @@ const VideoPost: React.FC<VideoPostProps> = ({
 
       {/* Interaction buttons */}
       <div className={`absolute right-4 ${isMobile ? 'bottom-16' : 'bottom-20'} flex flex-col gap-4`}>
-        <button className="bg-pink-500/80 p-3 rounded-full text-white hover:bg-pink-600 transition-colors">
-          <Heart size={isMobile ? 16 : 20} />
-          <span className="text-xs block mt-1">{post.likes || 0}</span>
-        </button>
+      <button 
+  className="relative p-3 rounded-full bg-transparent transition-transform transform hover:scale-110"
+  onClick={() => handleLikeClick(post.id)}
+>
+  <img 
+    src={customHeart} 
+    alt="Heart" 
+    className="w-8 h-8"
+    style={{ filter: isLiked ? 'grayscale(0)' : 'grayscale(1)' }} // Colorful if liked, grayscale if not
+  />
+  <span className="text-xs block mt-1 text-white">{likes}</span>
+</button>
+
         
         <button className="bg-pink-500/80 p-3 rounded-full text-white hover:bg-pink-600 transition-colors">
           <Star size={isMobile ? 16 : 20} />

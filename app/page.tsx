@@ -672,7 +672,7 @@ export default function Page() {
                       showUploadButton
                     />
                   </div>
-                  <p className="text-pink-500 text-xxl">
+                  <p className="text-pink-500 text-lg sm:text-xxl text-center mt-4 break-words leading-relaxed sm:leading-snug">
                     Not to be dramatic, but your being here literally made our whole day sparkle! ⭐
                   </p>
                 </div>

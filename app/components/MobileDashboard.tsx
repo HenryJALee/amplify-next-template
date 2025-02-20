@@ -3,6 +3,9 @@ import { Link2 } from 'lucide-react';
 import VideoPost from './VideoPost';
 import AmbassadorSpotlight from './AmbassadorSpotlight';
 import WonderWheel from './WonderWheel';
+import DomeProfilePicture from './DomeProfilePicture';
+import { ProfileImage } from './ProfileImage'; 
+import ComingSoonBlock from './Coming-soon';
 
 
 type Activity = {
@@ -50,7 +53,8 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
   videoRefs,
   currentlyPlaying,
   setCurrentlyPlaying,
-  activeSection
+  activeSection,
+  profileImage
   
 }) => {
   const renderContent = () => {
@@ -82,7 +86,7 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
 
       // In MobileDashboard.tsx, update the renderContent function
 
-            case 'messages':
+          case 'messages':
               return (
                 <div className="min-h-screen bg-[#fff6f9]">
                   <div className="p-4">
@@ -144,36 +148,54 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
               );
 
 
-        case 'game':
-            return (
-                <div className="min-h-screen pt-20 px-4">
-                  <div className="max-w-[95vw] mx-auto overflow-x-hidden">
-                    <WonderWheel />
+              case 'game':
+                return (
+                  <div className="min-h-screen pt-20 px-4">
+                    <div className="w-full max-w-[90vw] mx-auto overflow-x-hidden flex justify-center items-center">
+                      <div className="w-full max-w-[80vw] max-h-[80vh] object-contain">
+                        <WonderWheel />
+                      </div>
+                    </div>
                   </div>
-                </div>
-            );
+                  
+                );
             
       case 'home':
       default:
         return (
-          <div className="space-y-4 px-4">
-            {/* Welcome Card */}
-            <div className="bg-white p-4 rounded-lg shadow-sm">
-                
-            <h3 className="font-semibold text-xl text-[#ff47b0] mb-2 text-righti wou">
-                Welcome to our World ✨
-              </h3>
-               <p className="text-[#ff47b0] text-right">
-                Whimsical Fragrance meets Clinically Effective and Sensory Friendly Bodycare
-              </p>
-              
-              <div className="mt-4 space-y-1 text-sm">
-                <p className="text-[#ff47b0]"><span className="font-medium">TikTok:</span> @wonderverselab</p>
-                <p className="text-[#ff47b0]"><span className="font-medium">Instagram:</span> @wonderverselab, @thewondysociety_</p>
-                <p className="text-[#ff47b0]"><span className="font-medium">YouTube:</span> @thewonderverselabs</p>
-                <p className="text-[#ff47b0]"><span className="font-medium">Lemon8:</span> @thewonderverse</p>
-                </div>
-            </div>
+                <div className="space-y-4 px-4">
+                  {/* Welcome Card */}
+                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <div className="flex items-start gap-4 mb-4">
+                      {/* Profile Picture */}
+                      <div className="flex-shrink-0">
+                        <DomeProfilePicture 
+                          profileImage={profileImage?.url || null}
+                          isLoading={false}
+                          size="sm"
+                          showUploadButton={false}
+                        />
+                      </div>
+                      
+                      {/* Welcome Text */}
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-xl text-[#ff47b0] mb-2">
+                          Welcome to our World ✨
+                        </h3>
+                        <p className="text-[#ff47b0]">
+                          Whimsical Fragrance meets Clinically Effective and Sensory Friendly Bodycare
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Social Links - Below profile picture and welcome text */}
+                    <div className="space-y-1 text-sm">
+                      <p className="text-[#ff47b0]"><span className="font-medium">TikTok:</span> @wonderverselab</p>
+                      <p className="text-[#ff47b0]"><span className="font-medium">Instagram:</span> @wonderverselab, @thewondysociety_</p>
+                      <p className="text-[#ff47b0]"><span className="font-medium">YouTube:</span> @thewonderverselabs</p>
+                      <p className="text-[#ff47b0]"><span className="font-medium">Lemon8:</span> @thewonderverse</p>
+                    </div>
+                  </div>
 
             {/* Discount Code */}
             <div className="bg-white p-4 rounded-lg shadow-sm">
@@ -202,6 +224,10 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
                   ✨ Wonderverse
                 </a>
               </div>
+            </div>
+             {/* Coming Soon Section */}
+             <div className="bg-white p-4 rounded-lg shadow-sm">
+              <ComingSoonBlock />
             </div>
 
             {/* Recent Activity */}

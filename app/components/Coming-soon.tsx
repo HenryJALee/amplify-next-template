@@ -4,7 +4,7 @@ import Image from 'next/image';
 // Separate Product Announcement Component
 const ProductAnnouncement = () => {
   return (
-    <div className="bg-white p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] mb-6">
+    <div className="bg-[#fff6f9] p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] mb-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
         <Image
@@ -36,15 +36,15 @@ const ProductAnnouncement = () => {
         <div className="flex flex-col justify-center space-y-4 bg-[#FFF6F9] p-6 rounded-lg w-full">
           <p className="text-lg text-gray-800 font-medium">
             Get ready bestie - your new comfort-zone companion is about to drop! ✨ Think: cloud-soft luxury 
-            meets quick-absorbing magic.
+            meets quick-absorbing magic. The non-greasy formula actually increases skin's moisture with everyday use.
           </p>
 
           <div className="flex flex-wrap gap-3">
             <span className="bg-white px-3 py-1 rounded-full text-md text-pink-500 font-semibold border border-pink-300">
-              10%+ moisture boost
+              10%+ Moisture Increase 
             </span>
             <span className="bg-white px-3 py-1 rounded-full text-md text-pink-500 font-semibold border border-pink-300">
-              Made in France
+              Fragrance Created in France
             </span>
           </div>
         </div>
@@ -70,7 +70,7 @@ const ExperienceSection = () => {
           </h4>
           <p className="text-pink-600 text-lg font-medium">
             Picture this: You&apos;re lounging at an exclusive beach club, surrounded by blooming hibiscus and 
-            sunkissed bergamot. That&apos;s the vibe we&apos;ve bottled up just for you!
+            sunkissed bergamot. That&apos;s the vibe we&apos;ve bottled up just for you! You sip your lychee and blended peach dream mocktail while breathing in the fresh sea air✨
           </p>
         </div>
         <div className="flex justify-center items-center">
