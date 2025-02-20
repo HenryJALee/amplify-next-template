@@ -5,10 +5,6 @@ import AmbassadorSpotlight from './AmbassadorSpotlight';
 import WonderWheel from './WonderWheel';
 
 
-interface TouchPosition {
-  x: number;
-  y: number;
-}
 type Activity = {
   type: string;
   platform?: string;
