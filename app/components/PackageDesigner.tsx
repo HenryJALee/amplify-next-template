@@ -1,10 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-interface TouchPosition {
-  x: number;
-  y: number;
-}
-
 interface PackageItem {
   id: string | number;
   src: string;
@@ -47,11 +42,13 @@ const PackageDesigner: React.FC = () => {
     alt: `Package ${i + 1}`
   }));
 
+  {/* 
   const logos: PackageItem[] = Array.from({ length: 8 }, (_, i) => ({
     id: (i + 1).toString(),
     src: `/icons/Logos/logo${i + 1}.png`,
     alt: `Logo ${i + 1}`
   }));
+*/}
 
   const defaultIcons: PackageItem[] = Array.from({ length: 35 }, (_, i) => ({
     id: (i + 1).toString(),
@@ -146,7 +143,7 @@ const PackageDesigner: React.FC = () => {
 
   return (
     <div className="w-full min-h-screen bg-white p-4">
-      <h2 className="text-2xl md:text-4xl font-bold text-pink-500 text-center mb-4">
+      <h2 className={`font-bold text-pink-500 text-center mb-4 ${isMobile ? 'text-2xl' : 'text-4xl'}`}>
         ✨ Design Your Wonder Package ✨
       </h2>
       
