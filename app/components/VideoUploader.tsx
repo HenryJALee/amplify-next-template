@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Video, X } from 'lucide-react';
 import { FileUploader } from './FileUploader';
 import { uploadData, getUrl } from 'aws-amplify/storage';
-import { getCurrentUser } from 'aws-amplify/auth';
+import { getCurrentUser  } from 'aws-amplify/auth';
+
 
 interface VideoUploaderProps {
   onUploadComplete: (key: string, url: string) => void;

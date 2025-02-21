@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Star } from 'lucide-react';
+import { generateClient } from "aws-amplify/api";
+import type { Schema } from "@/amplify/data/resource";
 import { DailyScentFortune } from './DailyScentFortune';
+import { getCurrentUser } from 'aws-amplify/auth';
 type SlotIcon = 'palm' | 'star' | 'burst' | 'green' | 'yellow' | 'circle' | 'heart' | 'sparkle';
 
 interface ScentRecommendation {
@@ -89,6 +91,68 @@ const scentRecommendations: Record<string, ScentRecommendation> = {
   }
 };
 
+// Utility function to get current week identifier
+const getCurrentWeekId = () => {
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const weekNumber = Math.ceil((((now.getTime() - startOfYear.getTime()) / 86400000) + startOfYear.getDay() + 1) / 7);
+  return `${now.getFullYear()}-W${weekNumber}`;
+};
+  
+// Check if there's already a winner this week
+const checkWeeklyWinner = async () => {
+  
+  const client = generateClient<Schema>();
+
+  try {
+    const currentWeekId = getCurrentWeekId();
+    
+    const { data } = await client.models.PrizeRecord.list({
+      filter: {
+        weekId: {
+          eq: currentWeekId
+        }
+      }
+    });
+
+    return data.length > 0;
+  } catch (error) {
+    console.error('Error checking weekly winner:', error);
+    return true; // Fail safe - if we can't check, assume there's a winner
+  }
+};
+
+const generateSpinResult = async (): Promise<SlotIcon[]>  => {
+  // Check if there's already a winner this week
+  const hasWinnerThisWeek = await checkWeeklyWinner();
+  
+  const iconOptions: SlotIcon[] = ['palm', 'star', 'burst', 'green', 'yellow', 'circle', 'heart', 'sparkle'];
+  
+  if (hasWinnerThisWeek) {
+    // Force different icons when there's already a winner
+    const finalResult: SlotIcon[] = [];
+    const usedIcons = new Set<SlotIcon>();
+    
+    for (let i = 0; i < 3; i++) {
+      // Filter out already used icons
+      const availableIcons = iconOptions.filter(icon => !usedIcons.has(icon));
+      // Get random icon from remaining options
+      const randomIndex = Math.floor(Math.random() * availableIcons.length);
+      const selectedIcon = availableIcons[randomIndex];
+      // Add to result and mark as used
+      finalResult.push(selectedIcon);
+      usedIcons.add(selectedIcon);
+    }
+    
+    return finalResult;
+  } else {
+    // Original random logic when no winner yet
+    return Array(3).fill(null).map(() => {
+      return iconOptions[Math.floor(Math.random() * iconOptions.length)];
+    });
+  }
+};
+
 const WonderWheel = () => {
   const SPINS_ALLOWED = 3;
   const [isSpinning, setIsSpinning] = useState(false);
@@ -104,32 +168,34 @@ const WonderWheel = () => {
     green: '/icons/Green-Star.png',
     yellow: '/icons/Yellow-Star.png',
     circle: '/icons/wonder-circles.png',
-    heart: '/icons/heart-icon.png',
+    heart: '/icons/customheart.png',
     sparkle: '/icons/sparkle.png'
-  };
+  }
 
-  const notifyAdmin = async (winningCombination: SlotIcon[]) => {
+  const notifyWinner = async (userId: string) => {
+    const client = generateClient<Schema>();
     try {
-      await fetch('/api/notify-admin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          timestamp: new Date().toISOString(),
-          combination: winningCombination,
-          userId: 'current-user-id', // Replace with actual user ID
-          prize: 'Pink Croptop'
-        }),
-      });
+      
+      const response = await client.queries.notifyWinQuery({
+        userName: userId
+      })
+
+      if (!response || !response) {
+        throw new Error('Invalid response from notifyWinnerQuery');
+      }
+      console.log('Notification sent:', response);
+      return response;
     } catch (error) {
-      console.error('Failed to notify admin:', error);
+      console.error('Error notifying winner:', error);
+      throw error;
     }
   };
 
   const checkWin = (result: SlotIcon[]) => {
-    // 1 in 100,000 chance
-    return Math.random() < 0.00001;
+    // Check for three matching icons
+    //return true;
+    return result[0] === result[1] && result[1] === result[2];
+    
   };
 
   useEffect(() => {
@@ -185,19 +251,26 @@ const WonderWheel = () => {
       }));
     }, 100);
 
+    const finalResult = await generateSpinResult();
+
     setTimeout(async () => {
       clearInterval(spinInterval);
       setIsSpinning(false);
-      
-      const finalResult = Array(3).fill(null).map(() => {
-        const iconOptions: SlotIcon[] = ['palm', 'star', 'burst', 'green', 'yellow', 'circle', 'heart', 'sparkle'];
-        return iconOptions[Math.floor(Math.random() * iconOptions.length)];
-      });
-      
       setSlots(finalResult);
 
       if (checkWin(finalResult)) {
-        await notifyAdmin(finalResult);
+        // Store winning combination in PrizeRecord with username
+        const currentUser = await getCurrentUser();
+        console.log('Current user:', currentUser);
+        
+        const currentWeekId = getCurrentWeekId();
+        const client = generateClient<Schema>();
+        await client.models.PrizeRecord.create({
+          weekId: currentWeekId,
+          winningTime: new Date().toISOString(),
+          userId: currentUser.username // Replace with actual user ID
+        });
+        await notifyWinner(currentUser.username);
         alert('🎉 Congratulations! You won a Pink Croptop! Our team will contact you soon.');
       }
     }, 3000);

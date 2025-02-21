@@ -1,4 +1,6 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
+import { notifyWinner } from "../functions/notify-winner/resource"
+
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -7,13 +9,7 @@ specifies that any user authenticated via an API key can "create", "read",
 "update", and "delete" any "Todo" records.
 =========================================================================*/
 
-const schema = a.schema({
-  Todo: a
-    .model({
-      content: a.string(),
-    })
-    .authorization((allow) => [allow.owner()]),
-    
+const schema = a.schema({    
   User: a
     .model({
       cognitoId: a.string().required(), // Add this to link to Cognito user
@@ -50,7 +46,23 @@ const schema = a.schema({
         points: a.integer(),
         createdAt: a.string(),
         userID: a.string()
-    }).authorization((allow) => [allow.owner()])
+    }).authorization((allow) => [allow.authenticated()]),
+
+    PrizeRecord:  a.model({
+      id: a.id(),
+      weekId: a.string(),  // Format: '2024-W1', '2024-W2', etc.
+      winningTime: a.string(),
+      userId: a.string()
+    }).authorization((allow) => [allow.authenticated()]),
+
+    notifyWinQuery: a
+    .query()
+    .arguments({
+      userName: a.string(),
+    })
+    .returns(a.string())
+    .handler(a.handler.function(notifyWinner))
+    .authorization((allow) => [allow.authenticated()])
 });
 
 export type Schema = ClientSchema<typeof schema>;

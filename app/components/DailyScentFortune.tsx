@@ -11,7 +11,7 @@ interface Fortune {
 export function DailyScentFortune() {
   const [birthDate, setBirthDate] = useState<string>("");
   const [fortune, setFortune] = useState<Fortune | null>(null);
-  const [lastCheckTime, setLastCheckTime] = useState<number | null>(null);
+  //const [lastCheckTime, setLastCheckTime] = useState<number | null>(null);
   const [canCheck, setCanCheck] = useState<boolean>(true);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export function DailyScentFortune() {
       const hoursSinceLastCheck = (now - lastCheck) / (1000 * 60 * 60);
       if (hoursSinceLastCheck < 23) {
         setCanCheck(false);
-        setLastCheckTime(lastCheck);
+        //setLastCheckTime(lastCheck);
       } else {
         setCanCheck(true);
       }
@@ -33,7 +33,7 @@ export function DailyScentFortune() {
     if (!birthDate || !canCheck) return;
     
     const now = new Date().getTime();
-    setLastCheckTime(now);
+    //setLastCheckTime(now);
     localStorage.setItem('lastFortuneCheck', now.toString());
     setCanCheck(false);
 
@@ -107,7 +107,7 @@ export function DailyScentFortune() {
           <span className="text-amber-400">✨</span> Daily Scent Fortune <span className="text-amber-400">✨</span>
         </h1>
         <p className="text-lg text-gray-600 mb-8">
-          Enter your birthday to discover today's perfect scent match! Check back daily for new cosmic-inspired recommendations.
+          Enter your birthday to discover today&apos;s perfect scent match! Check back daily for new cosmic-inspired recommendations.
         </p>
 
         <div className="flex flex-col items-center justify-center">
@@ -126,7 +126,7 @@ export function DailyScentFortune() {
                 className="w-full px-8 py-4 bg-pink-500 text-white rounded-full text-xl font-bold hover:bg-pink-600 disabled:opacity-50 transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
               >
                 <Star className="h-6 w-6" />
-                Reveal Today's Fortune!
+                Reveal Today&apos;s Fortune!
                 <Star className="h-6 w-6" />
               </button>
             </div>
@@ -148,7 +148,7 @@ export function DailyScentFortune() {
               <div className="bg-white p-6 rounded-lg shadow-lg">
                 <h2 className="text-2xl text-pink-500 mb-4">{fortune.message}</h2>
                 <p className="text-xl text-pink-600">
-                  Today's Perfect Scent: ✨ {fortune.scent} ✨
+                  Today&apos;s Perfect Scent: ✨ {fortune.scent} ✨
                 </p>
               </div>
             </div>
