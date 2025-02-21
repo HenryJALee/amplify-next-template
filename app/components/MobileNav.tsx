@@ -133,12 +133,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
             width={24}
             height={24}
           />
-              <Image 
-            src={item.icon}
-            alt={`${item.label} icon`}
-            width={24}
-            height={24}
-          />
+        
               <span>{item.label}</span>
             </button>
           ))}
