@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Star, Share2 } from 'lucide-react';
 import Hls from 'hls.js';
-const customHeart = require('/public/icons/customheart.png');
-
+import Image from 'next/image';
+import customHeart from '/public/icons/customheart.png';
 
 type PostType = {
   id: string | null;
@@ -216,12 +216,14 @@ const handleLikeClick = (postId: string | null) => {
   className="relative p-3 rounded-full bg-transparent transition-transform transform hover:scale-110"
   onClick={() => handleLikeClick(post.id)}
 >
-  <img 
+<Image 
     src={customHeart} 
     alt="Heart" 
     className="w-8 h-8"
     style={{ filter: isLiked ? 'grayscale(0)' : 'grayscale(1)' }} // Colorful if liked, grayscale if not
-  />
+    width={32} // w-8 = 2rem = 32px
+    height={32} // h-8 = 2rem = 32px
+/>
   <span className="text-xs block mt-1 text-white">{likes}</span>
 </button>
 
