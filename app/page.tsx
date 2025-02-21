@@ -255,8 +255,27 @@ export default function Page() {
                 if (!response.data || response.data.length === 0) {
                     console.warn("⚠️ No posts found!");
                 }
+                // Filter posts younger than 30 seconds
+                  const thirtySecondsAgo = new Date(Date.now() - 30 * 1000); // 30 seconds ago
 
-                const posts = await Promise.all(response.data.map(async (post) => {
+                  const filteredPosts = response.data
+                  .filter(post => {
+                      if (!post.createdAt) {
+                          return false;
+                      }
+                      const postDate = new Date(post.createdAt);
+                      return postDate <= thirtySecondsAgo;
+                  })
+                  .sort((a, b) => {
+                      // Handle null/undefined createdAt values
+                       if (!a.createdAt) return 1;  // Push null dates to the end
+                      if (!b.createdAt) return -1; // Push null dates to the end
+                      
+                      // Sort in descending order (newest first)
+                      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                  });
+
+                const posts = await Promise.all(filteredPosts.map(async (post) => {
                     console.log("🔹 Processing post:", post);
 
                     let profileImageUrl = "/default-avatar.png"; // Default image
@@ -296,7 +315,7 @@ export default function Page() {
                             console.warn(`⚠️ No user found for creator: ${post.creator}`);
                         }
                     }
-
+                    
                     if (post.mediaKey) {
                         const signedURL = await getUrl({
                             key: post.mediaKey,
@@ -675,6 +694,7 @@ export default function Page() {
                     Not to be dramatic, but your being here literally made our whole day sparkle! ⭐
                   </p>
                 </div>
+                
               </div>
         
               {/* Personal Information Section */}
