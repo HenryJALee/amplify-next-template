@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 
 interface PackageItem {
   id: string | number;
@@ -160,7 +161,16 @@ const PackageDesigner: React.FC = () => {
                 onClick={() => handleItemAdd(icon)}
                 className="p-1 border-2 border-gray-200 rounded-lg hover:border-pink-500 transition-all aspect-square"
               >
-                <img src={icon.src} alt={icon.alt} className="w-full h-full object-contain" />
+                <div className="relative w-full h-full">
+              <Image 
+                src={icon.src} 
+                alt={icon.alt} 
+                fill
+                className="object-contain" 
+                sizes="(max-width: 768px) 33vw, 25vw"
+              />
+            </div>
+
               </button>
             ))}
           </div>

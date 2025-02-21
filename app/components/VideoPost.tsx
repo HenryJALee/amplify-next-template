@@ -11,7 +11,7 @@ type PostType = {
   caption: string | null;
   likes: number | null;
   points: number | null;
-  creatorProfileImage?: string; // Added this for profile image support
+  creatorProfileImage?: string;
 };
 
 type VideoPostProps = {
@@ -38,95 +38,77 @@ const VideoPost: React.FC<VideoPostProps> = ({
   const [likes, setLikes] = useState(post.likes || 0);
   const [isLiked, setIsLiked] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const hlsConfig = {
-    startLevel: -1, // Auto-select initial quality
-    abrEwmaDefaultEstimate: 500000, // Default bandwidth estimate
-    abrMaxWithRealBitrate: true, // Use real bitrate for ABR
-  };
-const handleSoundToggle = (postId: string | null) => {
-  if (!postId) return;
-  const hlsConfig = {
-    startLevel: -1, // Auto-select initial quality
-    abrEwmaDefaultEstimate: 500000, // Default bandwidth estimate
-    abrMaxWithRealBitrate: true, // Use real bitrate for ABR
-  };
-  const video = videoRefs.current[postId];
-  if (video) {
-    video.muted = !isMuted;
-    setIsMuted(!isMuted);
-  }
-};
 
-// Like Button Click Handler
-const handleLikeClick = (postId: string | null) => {
-  if (!postId) return;
+  const setupHls = (el: HTMLVideoElement, url: string): Hls | null => {
+    if (Hls.isSupported() && url?.endsWith('.m3u8')) {
+      const hls = new Hls({
+        startLevel: -1,
+        abrEwmaDefaultEstimate: 500000,
+        abrMaxWithRealBitrate: true,
+      });
 
-  if (isLiked) {
-    // Unlike the post
-    setLikes(prev => prev - 1);
-    setIsLiked(false);
-    // TODO: Update backend to decrease like count
-  } else {
-    // Like the post
-    setLikes(prev => prev + 1);
-    setIsLiked(true);
-    // TODO: Update backend to increase like count
-  }
-};
+      hls.loadSource(url);
+      hls.attachMedia(el);
 
-const setupHls = (el: HTMLVideoElement, url: string) => {
-  if (Hls.isSupported() && url?.endsWith('.m3u8')) {
-    const hls = new Hls({
-      ...hlsConfig,
-      startLevel: -1, // Auto-select initial quality
-      abrEwmaDefaultEstimate: 500000, // Default bandwidth estimate
-      abrMaxWithRealBitrate: true, // Use real bitrate for ABR
-    });
+      hls.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
+        console.log(`Quality Level: ${data.level}`);
+      });
 
-    hls.loadSource(url);
-    hls.attachMedia(el);
-
-    hls.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
-      console.log(`Quality Level: ${data.level}`);
-    });
-
-    // Handle errors
-    hls.on(Hls.Events.ERROR, (_, data) => {
-      if (data.fatal) {
-        switch (data.type) {
-          case Hls.ErrorTypes.NETWORK_ERROR:
-            hls.startLoad(); // Try to recover on network errors
-            break;
-          case Hls.ErrorTypes.MEDIA_ERROR:
-            hls.recoverMediaError(); // Try to recover on media errors
-            break;
-          default:
-            // Cannot recover
-            hls.destroy();
-            break;
+      hls.on(Hls.Events.ERROR, (_, data) => {
+        if (data.fatal) {
+          switch (data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              hls.startLoad();
+              break;
+            case Hls.ErrorTypes.MEDIA_ERROR:
+              hls.recoverMediaError();
+              break;
+            default:
+              hls.destroy();
+              break;
+          }
         }
-      }
-    });
-  }
-};
+      });
+
+      return hls;
+    }
+    return null;
+  };
+
+  const handleSoundToggle = (postId: string | null) => {
+    if (!postId) return;
+    const video = videoRefs.current[postId];
+    if (video) {
+      video.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const handleLikeClick = (postId: string | null) => {
+    if (!postId) return;
+    if (isLiked) {
+      setLikes(prev => prev - 1);
+      setIsLiked(false);
+    } else {
+      setLikes(prev => prev + 1);
+      setIsLiked(true);
+    }
+  };
 
   useEffect(() => {
     const videoElement = post.id ? videoRefs.current[post.id] : null;
     if (videoElement) {
-      // Set initial low quality
       videoElement.addEventListener('canplay', () => {
         if (!isPlaying) {
           videoElement.play().catch(console.error);
         }
       });
 
-      // Gradually increase quality
       videoElement.addEventListener('playing', () => {
         setIsPlaying(true);
       });
     }
-  }, [post.id]);
-
+  }, [post.id, isPlaying]);
 
   useEffect(() => {
     if (!post.id) return;
@@ -151,7 +133,6 @@ const setupHls = (el: HTMLVideoElement, url: string) => {
               }
             }
             
-            // Only play if video is loaded
             if (video.readyState >= 3) {
               await video.play();
               setCurrentlyPlaying(video.id);
@@ -197,7 +178,6 @@ const setupHls = (el: HTMLVideoElement, url: string) => {
     setIsLoading(false);
     setHasError(true);
   
-    // Implement retry logic with exponential backoff
     let retryCount = 0;
     const maxRetries = 3;
     const retryVideo = async () => {
@@ -215,7 +195,6 @@ const setupHls = (el: HTMLVideoElement, url: string) => {
     
     await retryVideo();
   };
-  
 
   return (
     <div 
@@ -247,66 +226,55 @@ const setupHls = (el: HTMLVideoElement, url: string) => {
         </div>
       )}
 
-    <video
-      ref={el => {
-        if (el && post.id) {
-          videoRefs.current[post.id] = el;
-        }
-
-        if (el) {
-          el.addEventListener('waiting', () => setIsBuffering(true));
-          el.addEventListener('playing', () => setIsBuffering(false));
-          
-          // Preload next video when current one is almost finished
-          el.addEventListener('timeupdate', () => {
-            if (el.duration - el.currentTime < 10) { // 10 seconds before end
-              // Preload next video logic here
+      <video
+        ref={el => {
+          if (el && post.id) {
+            videoRefs.current[post.id] = el;
+            if (post.mediaUrl) {
+              setupHls(el, post.mediaUrl);
             }
-          });
-        }
+          }
 
-        // HLS Integration
-        if (Hls.isSupported() && post.mediaUrl?.endsWith('.m3u8')) {
-          const hls = new Hls(hlsConfig);
-          hls.loadSource(post.mediaUrl);
-          if (el instanceof HTMLMediaElement) {
-            hls.attachMedia(el);
-          }     
+          if (el) {
+            el.addEventListener('waiting', () => setIsBuffering(true));
+            el.addEventListener('playing', () => setIsBuffering(false));
+            
+            el.addEventListener('timeupdate', () => {
+              if (el.duration - el.currentTime < 10) {
+                // Preload next video logic here
+              }
+            });
+          }
 
-          hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            el?.play();
-          });
-        } else if (el?.canPlayType('application/vnd.apple.mpegurl')) {
-          // For Safari (iOS & macOS) which supports HLS natively
-          el.src = post.mediaUrl ?? '';
-          el.addEventListener('loadedmetadata', () => {
-            el.play();
-          });
-        }
-      }}
-      className="w-full h-auto max-w-md aspect-[9/16] object-contain bg-black"
-      loop
-      playsInline
-      muted
-      preload="auto"
-      onLoadedData={handleVideoLoad}
-      onError={handleVideoError}
-      style={{ 
-        opacity: isLoading ? 0 : 1,
-        willChange: 'transform', // Optimize for animations
-        transform: 'translateZ(0)' // Force GPU acceleration
-      }}
-    >
-      Your browser does not support the video tag.
-    </video>
-    {isBuffering && (
-      <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500" />
-      </div>
-    )}
+          if (!Hls.isSupported() && el?.canPlayType('application/vnd.apple.mpegurl')) {
+            el.src = post.mediaUrl ?? '';
+            el.addEventListener('loadedmetadata', () => {
+              el.play();
+            });
+          }
+        }}
+        className="w-full h-auto max-w-md aspect-[9/16] object-contain bg-black"
+        loop
+        playsInline
+        muted
+        preload="auto"
+        onLoadedData={handleVideoLoad}
+        onError={handleVideoError}
+        style={{ 
+          opacity: isLoading ? 0 : 1,
+          willChange: 'transform',
+          transform: 'translateZ(0)'
+        }}
+      >
+        Your browser does not support the video tag.
+      </video>
 
+      {isBuffering && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500" />
+        </div>
+      )}
 
-      {/* Overlay for post information */}
       <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden">
@@ -324,29 +292,28 @@ const setupHls = (el: HTMLVideoElement, url: string) => {
         <p className="text-white text-sm">{post.caption}</p>
       </div>
 
-      {/* Interaction buttons */}
       <div className={`absolute right-4 ${isMobile ? 'bottom-16' : 'bottom-20'} flex flex-col gap-4`}>
-      <button 
-  className="relative p-3 rounded-full bg-transparent transition-transform transform hover:scale-110"
-  onClick={() => handleLikeClick(post.id)}
->
-<Image 
-    src={customHeart} 
-    alt="Heart" 
-    className="w-8 h-8"
-    style={{ filter: isLiked ? 'grayscale(0)' : 'grayscale(1)' }} // Colorful if liked, grayscale if not
-  />
-    <span className="text-xs block mt-1 text-white">{likes}</span>
-          </button>
+        <button 
+          className="relative p-3 rounded-full bg-transparent transition-transform transform hover:scale-110"
+          onClick={() => handleLikeClick(post.id)}
+        >
+          <Image 
+            src={customHeart} 
+            alt="Heart" 
+            className="w-8 h-8"
+            style={{ filter: isLiked ? 'grayscale(0)' : 'grayscale(1)' }}
+          />
+          <span className="text-xs block mt-1 text-white">{likes}</span>
+        </button>
 
-          <button 
-            className="absolute top-4 right-4 bg-black/50 p-2 rounded-full text-white"
-            onClick={() => handleSoundToggle(post.id)}
-          >
-            {isMuted ? '🔇' : '🔊'}
-          </button>
+        <button 
+          className="absolute top-4 right-4 bg-black/50 p-2 rounded-full text-white"
+          onClick={() => handleSoundToggle(post.id)}
+        >
+          {isMuted ? '🔇' : '🔊'}
+        </button>
 
-          <button className="bg-pink-500/80 p-3 rounded-full text-white hover:bg-pink-600 transition-colors">
+        <button className="bg-pink-500/80 p-3 rounded-full text-white hover:bg-pink-600 transition-colors">
           <Star size={isMobile ? 16 : 20} />
           <span className="text-xs block mt-1">{post.points || 0}</span>
         </button>
