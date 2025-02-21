@@ -16,7 +16,6 @@ export const listCommunityPosts = async () => {
   }
 };
 
-
 export const createCommunityPost = async (
 data: {
   creator: string;
@@ -28,10 +27,9 @@ data: {
     const response = await client.models.CommunityPost.create({
       creator: data.creator,
       caption: data.caption,
-      mediaUrl: data.mediaUrl,
-      mediaKey: data.mediaKey
+      mediaUrl: data.mediaUrl.replace('community-videos', 'compressed-videos'),
+      mediaKey: data.mediaKey.replace('community-videos', 'compressed-videos')
     });
-
     return response;
   } catch (error) {
     console.error('Error in createCommunityPost:', error);
