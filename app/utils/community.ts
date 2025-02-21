@@ -28,7 +28,7 @@ data: {
       creator: data.creator,
       caption: data.caption,
       mediaUrl: data.mediaUrl.replace('community-videos', 'compressed-videos'),
-      mediaKey: data.mediaKey,
+      mediaKey: data.mediaKey.replace('community-videos', 'compressed-videos')
     });
     return response;
   } catch (error) {
