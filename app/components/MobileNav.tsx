@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import Image from 'next/image';
-import WONDERLOGO_UPDATED from '../../public/icons/Wonderverse-logo-update.png';
-
 import PinkStar from '../../public/icons/Pink-Star.png';
 import BlueStar from '../../public/icons/Blue-Star.png';
 import GreenStar from '../../public/icons/Green-Star.png';
 import YellowStar from '../../public/icons/Yellow-Star.png';
+import WONDERLOGO_UPDATED from '../../public/icons/Wonderverse-logo-update.png';
+
 
 // Define the types for the props
 interface MobileNavProps {
@@ -67,8 +67,17 @@ const MobileNav: React.FC<MobileNavProps> = ({
         />
       )}
 
+      {/* Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/20 z-40"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
       {/* Mobile Menu */}
       <div className={`
+        fixed inset-0 bg-white z-50 transition-transform duration-300 ease-in-out
         fixed inset-0 bg-white z-50 transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         pt-16 pb-6 px-4
@@ -124,9 +133,16 @@ const MobileNav: React.FC<MobileNavProps> = ({
             width={24}
             height={24}
           />
+              <Image 
+            src={item.icon}
+            alt={`${item.label} icon`}
+            width={24}
+            height={24}
+          />
               <span>{item.label}</span>
             </button>
           ))}
+
 
           {/* Add Content Button */}
           <button

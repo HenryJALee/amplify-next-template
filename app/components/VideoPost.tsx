@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Star, Share2 } from 'lucide-react';
 import Hls from 'hls.js';
-const customHeart = require('/public/icons/customheart.png');
-
+import Image from 'next/image';
+import customHeart from '/public/icons/customheart.png';
 
 type PostType = {
   id: string | null;
@@ -33,14 +33,23 @@ const VideoPost: React.FC<VideoPostProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-// Like Counter State
-const [likes, setLikes] = useState(post.likes || 0);
-const [isLiked, setIsLiked] = useState(false);
-// Sound Control State
-const [isMuted, setIsMuted] = useState(true);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [likes, setLikes] = useState(post.likes || 0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const hlsConfig = {
+    startLevel: -1, // Auto-select initial quality
+    abrEwmaDefaultEstimate: 500000, // Default bandwidth estimate
+    abrMaxWithRealBitrate: true, // Use real bitrate for ABR
+  };
 const handleSoundToggle = (postId: string | null) => {
   if (!postId) return;
-
+  const hlsConfig = {
+    startLevel: -1, // Auto-select initial quality
+    abrEwmaDefaultEstimate: 500000, // Default bandwidth estimate
+    abrMaxWithRealBitrate: true, // Use real bitrate for ABR
+  };
   const video = videoRefs.current[postId];
   if (video) {
     video.muted = !isMuted;
@@ -64,6 +73,60 @@ const handleLikeClick = (postId: string | null) => {
     // TODO: Update backend to increase like count
   }
 };
+
+const setupHls = (el: HTMLVideoElement, url: string) => {
+  if (Hls.isSupported() && url?.endsWith('.m3u8')) {
+    const hls = new Hls({
+      ...hlsConfig,
+      startLevel: -1, // Auto-select initial quality
+      abrEwmaDefaultEstimate: 500000, // Default bandwidth estimate
+      abrMaxWithRealBitrate: true, // Use real bitrate for ABR
+    });
+
+    hls.loadSource(url);
+    hls.attachMedia(el);
+
+    hls.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
+      console.log(`Quality Level: ${data.level}`);
+    });
+
+    // Handle errors
+    hls.on(Hls.Events.ERROR, (_, data) => {
+      if (data.fatal) {
+        switch (data.type) {
+          case Hls.ErrorTypes.NETWORK_ERROR:
+            hls.startLoad(); // Try to recover on network errors
+            break;
+          case Hls.ErrorTypes.MEDIA_ERROR:
+            hls.recoverMediaError(); // Try to recover on media errors
+            break;
+          default:
+            // Cannot recover
+            hls.destroy();
+            break;
+        }
+      }
+    });
+  }
+};
+
+  useEffect(() => {
+    const videoElement = post.id ? videoRefs.current[post.id] : null;
+    if (videoElement) {
+      // Set initial low quality
+      videoElement.addEventListener('canplay', () => {
+        if (!isPlaying) {
+          videoElement.play().catch(console.error);
+        }
+      });
+
+      // Gradually increase quality
+      videoElement.addEventListener('playing', () => {
+        setIsPlaying(true);
+      });
+    }
+  }, [post.id]);
+
 
   useEffect(() => {
     if (!post.id) return;
@@ -129,11 +192,30 @@ const handleLikeClick = (postId: string | null) => {
     setHasError(false);
   };
 
-  const handleVideoError = (e: any) => {
+  const handleVideoError = async (e: any) => {
     console.error('Video loading error:', e);
     setIsLoading(false);
     setHasError(true);
+  
+    // Implement retry logic with exponential backoff
+    let retryCount = 0;
+    const maxRetries = 3;
+    const retryVideo = async () => {
+      if (retryCount < maxRetries) {
+        retryCount++;
+        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
+        const video = videoRefs.current[post.id!];
+        if (video) {
+          video.load();
+          setIsLoading(true);
+          setHasError(false);
+        }
+      }
+    };
+    
+    await retryVideo();
   };
+  
 
   return (
     <div 
@@ -165,42 +247,63 @@ const handleLikeClick = (postId: string | null) => {
         </div>
       )}
 
-<video
-  ref={el => {
-    if (el && post.id) {
-      videoRefs.current[post.id] = el;
-    }
+    <video
+      ref={el => {
+        if (el && post.id) {
+          videoRefs.current[post.id] = el;
+        }
 
-    // HLS Integration
-    if (Hls.isSupported() && post.mediaUrl?.endsWith('.m3u8')) {
-      const hls = new Hls();
-      hls.loadSource(post.mediaUrl);
-      if (el instanceof HTMLMediaElement) {
-        hls.attachMedia(el);
-      }      
+        if (el) {
+          el.addEventListener('waiting', () => setIsBuffering(true));
+          el.addEventListener('playing', () => setIsBuffering(false));
+          
+          // Preload next video when current one is almost finished
+          el.addEventListener('timeupdate', () => {
+            if (el.duration - el.currentTime < 10) { // 10 seconds before end
+              // Preload next video logic here
+            }
+          });
+        }
 
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        el?.play();
-      });
-    } else if (el?.canPlayType('application/vnd.apple.mpegurl')) {
-      // For Safari (iOS & macOS) which supports HLS natively
-      el.src = post.mediaUrl ?? '';
-      el.addEventListener('loadedmetadata', () => {
-        el.play();
-      });
-    }
-  }}
-  className="w-full h-auto max-w-md aspect-[9/16] object-contain bg-black"
-  loop
-  playsInline
-  muted
-  preload="metadata"
-  onLoadedData={handleVideoLoad}
-  onError={handleVideoError}
-  style={{ opacity: isLoading ? 0 : 1 }}
->
-  Your browser does not support the video tag.
-</video>
+        // HLS Integration
+        if (Hls.isSupported() && post.mediaUrl?.endsWith('.m3u8')) {
+          const hls = new Hls(hlsConfig);
+          hls.loadSource(post.mediaUrl);
+          if (el instanceof HTMLMediaElement) {
+            hls.attachMedia(el);
+          }     
+
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            el?.play();
+          });
+        } else if (el?.canPlayType('application/vnd.apple.mpegurl')) {
+          // For Safari (iOS & macOS) which supports HLS natively
+          el.src = post.mediaUrl ?? '';
+          el.addEventListener('loadedmetadata', () => {
+            el.play();
+          });
+        }
+      }}
+      className="w-full h-auto max-w-md aspect-[9/16] object-contain bg-black"
+      loop
+      playsInline
+      muted
+      preload="auto"
+      onLoadedData={handleVideoLoad}
+      onError={handleVideoError}
+      style={{ 
+        opacity: isLoading ? 0 : 1,
+        willChange: 'transform', // Optimize for animations
+        transform: 'translateZ(0)' // Force GPU acceleration
+      }}
+    >
+      Your browser does not support the video tag.
+    </video>
+    {isBuffering && (
+      <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500" />
+      </div>
+    )}
 
 
       {/* Overlay for post information */}
@@ -227,7 +330,7 @@ const handleLikeClick = (postId: string | null) => {
   className="relative p-3 rounded-full bg-transparent transition-transform transform hover:scale-110"
   onClick={() => handleLikeClick(post.id)}
 >
-  <img 
+<Image 
     src={customHeart} 
     alt="Heart" 
     className="w-8 h-8"
