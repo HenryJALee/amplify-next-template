@@ -5,7 +5,7 @@ import AmbassadorSpotlight from './AmbassadorSpotlight';
 import WonderWheel from './WonderWheel';
 import DomeProfilePicture from './DomeProfilePicture';
 import ComingSoonBlock from './Coming-soon';
-import ChallengesSection from './ChallengeSection'
+
 
 type Activity = {
   type: string;
@@ -85,23 +85,77 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
 
       // In MobileDashboard.tsx, update the renderContent function
 
-      case 'messages':
-        return (
-          <div className="min-h-screen bg-[#fff6f9]">
-            <ChallengesSection />
-          </div>
-        );
-    
+            case 'messages':
+              return (
+                <div className="min-h-screen bg-[#fff6f9]">
+                  <div className="p-4">
+                     {/* Only Challenges Section */}
+                    <div className="bg-white rounded-lg shadow-lg p-4">
+                      <h2 className="text-xl font-semibold text-pink-500 mb-4">Challenges</h2>
+                      <div className="space-y-6">
+                        {/* Talk Bubble Challenge */}
+                        <div className="relative bg-pink-100 rounded-2xl p-4 mx-4">
+                          <div className="absolute -left-2 top-1/2 transform -translate-y-1/2 
+                                      w-4 h-4 bg-pink-100 rotate-45"></div>
+                          <div className="relative z-10">
+                            <h3 className="font-medium text-lg mb-2 text-pink-600">Referral Challenge</h3>
+                            <p className="text-pink-500">Refer 10 friends for a hoodie! 👕</p>
+                            <div className="mt-2 flex items-center gap-2">
+                              <span className="text-sm text-pink-600">Progress: 3/10</span>
+                              <div className="flex-1 h-2 bg-pink-200 rounded-full">
+                                <div className="w-[30%] h-full bg-pink-500 rounded-full"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Another Talk Bubble Challenge */}
+                        <div className="relative bg-purple-100 rounded-2xl p-4 mx-4">
+                          <div className="absolute -left-2 top-1/2 transform -translate-y-1/2 
+                                      w-4 h-4 bg-purple-100 rotate-45"></div>
+                          <div className="relative z-10">
+                            <h3 className="font-medium text-lg mb-2 text-purple-600">Video Challenge</h3>
+                            <p className="text-purple-500">Create 5 product reviews! 🎥</p>
+                            <div className="mt-2 flex items-center gap-2">
+                              <span className="text-sm text-purple-600">Progress: 2/5</span>
+                              <div className="flex-1 h-2 bg-purple-200 rounded-full">
+                                <div className="w-[40%] h-full bg-purple-500 rounded-full"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Third Talk Bubble Challenge */}
+                        <div className="relative bg-blue-100 rounded-2xl p-4 mx-4">
+                          <div className="absolute -left-2 top-1/2 transform -translate-y-1/2 
+                                      w-4 h-4 bg-blue-100 rotate-45"></div>
+                          <div className="relative z-10">
+                            <h3 className="font-medium text-lg mb-2 text-blue-600">Social Challenge</h3>
+                            <p className="text-blue-500">Share 3 posts with #Wonderverse! 🌟</p>
+                            <div className="mt-2 flex items-center gap-2">
+                              <span className="text-sm text-blue-600">Progress: 1/3</span>
+                              <div className="flex-1 h-2 bg-blue-200 rounded-full">
+                                <div className="w-[33%] h-full bg-blue-500 rounded-full"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+
+
               case 'game':
                 return (
                   <div className="min-h-screen pt-20 px-4">
-                    <div className="w-full max-w-[90vw] mx-auto overflow-x-hidden flex justify-center items-center">
-                      <div className="w-full max-w-[80vw] max-h-[80vh] object-contain">
+                    <div className="w-full mx-auto overflow-x-hidden flex justify-center items-center">
+                    <div className="w-full object-contain">
                         <WonderWheel />
                       </div>
                     </div>
                   </div>
-                  
                 );
             
       case 'home':

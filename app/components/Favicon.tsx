@@ -1,13 +1,44 @@
-import Head from 'next/head'
+'use client';
+import { useEffect } from 'react';
+import { getUrl } from 'aws-amplify/storage';
 
 const Favicon = () => {
-  return (
-    <Head>
-      <link rel="icon" type="image/png" href="/icons/pink-yacht-club.png" />
-      <link rel="apple-touch-icon" href="/icons/pink-yacht-club.png" />
-      <link rel="shortcut icon" href="/icons/pink-yacht-club.png" />
-    </Head>
-  )
-}
+  useEffect(() => {
+    const updateFavicon = async () => {
+      try {
+        // Get the signed URL for the favicon
+        const { url } = await getUrl({
+          key: 'icons/pink-yacht-club.png',
+          options: {
+            accessLevel: 'guest',
+            validateObjectExistence: true
+          }
+        });
 
-export default Favicon
+        // Update favicon links
+        const links = document.querySelectorAll("link[rel*='icon']");
+        links.forEach((link: Element) => {
+          if (link instanceof HTMLLinkElement) {
+            link.href = url.href;
+          }
+        });
+
+        // If no favicon links exist, create them
+        if (links.length === 0) {
+          const link = document.createElement('link');
+          link.rel = 'icon';
+          link.href = url.href;
+          document.head.appendChild(link);
+        }
+      } catch (error) {
+        console.error('Error setting favicon:', error);
+      }
+    };
+
+    updateFavicon();
+  }, []);
+
+  return null;
+};
+
+export default Favicon;

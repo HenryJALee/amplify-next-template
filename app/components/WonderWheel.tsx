@@ -289,8 +289,8 @@ const WonderWheel = () => {
 
   return (
     <div className="w-full flex flex-col items-center bg-[#FFF6F9]">
-      <div className="max-w-2xl mx-auto bg-[#fff6f9] rounded-lg shadow-[0_0_10px_#ff00ff] p-8 mb-8">
-        <h1 className="text-4xl font-bold text-pink-500 text-center mb-8">Wonder Wheel</h1>
+      <div className="max-w-2xl mx-auto bg-[#fff6f9] rounded-lg shadow-[0_0_10px_#ff00ff] p-4 md:p-8 mb-8">
+      <h1 className="text-2xl md:text-4xl font-bold text-pink-500 text-center mb-4 md:mb-8">Wonder Wheel</h1>
         
         <div className="flex justify-center gap-4 mb-8">
           {slots.map((icon, index) => (

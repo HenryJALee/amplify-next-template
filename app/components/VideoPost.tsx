@@ -36,6 +36,17 @@ const VideoPost: React.FC<VideoPostProps> = ({
 // Like Counter State
 const [likes, setLikes] = useState(post.likes || 0);
 const [isLiked, setIsLiked] = useState(false);
+// Sound Control State
+const [isMuted, setIsMuted] = useState(true);
+const handleSoundToggle = (postId: string | null) => {
+  if (!postId) return;
+
+  const video = videoRefs.current[postId];
+  if (video) {
+    video.muted = !isMuted;
+    setIsMuted(!isMuted);
+  }
+};
 
 // Like Button Click Handler
 const handleLikeClick = (postId: string | null) => {
@@ -222,11 +233,17 @@ const handleLikeClick = (postId: string | null) => {
     className="w-8 h-8"
     style={{ filter: isLiked ? 'grayscale(0)' : 'grayscale(1)' }} // Colorful if liked, grayscale if not
   />
-  <span className="text-xs block mt-1 text-white">{likes}</span>
-</button>
+    <span className="text-xs block mt-1 text-white">{likes}</span>
+          </button>
 
-        
-        <button className="bg-pink-500/80 p-3 rounded-full text-white hover:bg-pink-600 transition-colors">
+          <button 
+            className="absolute top-4 right-4 bg-black/50 p-2 rounded-full text-white"
+            onClick={() => handleSoundToggle(post.id)}
+          >
+            {isMuted ? '🔇' : '🔊'}
+          </button>
+
+          <button className="bg-pink-500/80 p-3 rounded-full text-white hover:bg-pink-600 transition-colors">
           <Star size={isMobile ? 16 : 20} />
           <span className="text-xs block mt-1">{post.points || 0}</span>
         </button>

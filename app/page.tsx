@@ -28,9 +28,8 @@ import MobileNav from './components/MobileNav';
 import MobileDashboard from "./components/MobileDashboard";
 import PackageDesigner from './components/PackageDesigner';
 import ComingSoonBlock from './components/Coming-soon';
-import Favicon from './components/Favicon';
-import ChallengesSection from './components/ChallengeSection'
-
+import ChallengesSection from './components/ChallengeSection';
+import Head from 'next/head';
 
 Amplify.configure(outputs);
 
@@ -1004,8 +1003,12 @@ export default function Page() {
   };
 
   return (
-   <>
-   <Favicon />
+    <>
+    <Head>
+    <title>Wonderverse</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/pink-yacht-club.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/pink-yacht-club.png" />
+  </Head>
     {isMobile ? (
       // Mobile Layout
       <div className="min-h-screen bg-wonder-pink">
