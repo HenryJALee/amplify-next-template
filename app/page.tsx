@@ -4,7 +4,7 @@ import { generateClient } from "aws-amplify/data";
 import { getUrl } from 'aws-amplify/storage';
 import type { Schema } from "@/amplify/data/resource";
 import React, { useRef, useState, useEffect } from 'react';
-import { Star, Link2, Heart, Share2, LogOut } from 'lucide-react';
+import { Star, Link2, Heart, Share2, User, LogOut } from 'lucide-react';
 import { signOut, getCurrentUser } from 'aws-amplify/auth';
 import { useRouter } from 'next/navigation';
 import { VideoUploader } from './components/VideoUploader';
@@ -26,8 +26,10 @@ import FAQDropdown from './components/FAQDropdown';
 import VideoPost from './components/VideoPost';
 import MobileNav from './components/MobileNav';
 import MobileDashboard from "./components/MobileDashboard";
-
-
+import PackageDesigner from './components/PackageDesigner';
+import ComingSoonBlock from './components/Coming-soon';
+import ChallengesSection from './components/ChallengeSection';
+import Head from 'next/head';
 
 Amplify.configure(outputs);
 
@@ -35,7 +37,6 @@ Amplify.configure(outputs);
 type Activity = {
   type: string;
   platform?: string;
-  points: number;
   date: string;
 };
 
@@ -57,8 +58,6 @@ type User = {
 type Ambassador = {
   name: string;
   username: string;
-  points: number;
-  tier: string;
   discountCode: string;
   recentActivity: Activity[];
 };
@@ -118,8 +117,6 @@ export default function Page() {
   const [ambassador, setAmbassador] = useState<Ambassador>({
     name: "",
     username: "",
-    points: 0,
-    tier: "",
     discountCode: "",
     recentActivity: []
   });
@@ -169,21 +166,16 @@ export default function Page() {
         setCommunityPosts(prevPosts => [postWithSignedUrl, ...prevPosts]);
       }
       
-      // Add points for uploading content
-      const points = 50;
-      setAmbassador(prev => ({
-        ...prev,
-        points: prev.points + points,
+      setAmbassador({
+        name: response.data[0].firstName || "Ambassador",
+        username: response.data[0].username || "",
+        discountCode: `WONDER${currentUser.username.toUpperCase()}`,
         recentActivity: [
-          {
-            type: 'Post',
-            platform: 'TikTok',
-            points: points,
-            date: new Date().toISOString().split('T')[0]
-          },
-          ...prev.recentActivity
+          { type: "Post", platform: "TikTok", date: "2024-01-25" },
+          { type: "Review", date: "2024-01-24" },
+          { type: "Referral", date: "2024-01-23" }
         ]
-      }));
+      });
 
       setShowVideoUploader(false);
     } catch (error) {
@@ -220,13 +212,11 @@ export default function Page() {
           setAmbassador({
             name: response.data[0].firstName || "Ambassador",
             username: response.data[0].username || "",
-            points: 750,
-            tier: "Wonder Advocate",
             discountCode: `WONDER${currentUser.username.toUpperCase()}`,  // Changed from affiliateLink
             recentActivity: [
-              { type: "Post", platform: "TikTok", points: 50, date: "2024-01-25" },
-              { type: "Review", points: 25, date: "2024-01-24" },
-              { type: "Referral", points: 100, date: "2024-01-23" }
+              { type: "Post", platform: "TikTok", date: "2024-01-25" },
+              { type: "Review", date: "2024-01-24" },
+              { type: "Referral", date: "2024-01-23" }
             ]
           });
         }
@@ -576,12 +566,13 @@ export default function Page() {
                   </div>
                   <p className="text-[#ff47b0]">Whimsical Fragrance meets Clinically Effective and Sensory Friendly Bodycare...And this is where you come in!</p>
                   
-                  <div className="space-y-2 text-'#ff47b0'">
-                    <p><span className="font-medium">TikTok:</span> @wonderverselab</p>
-                    <p><span className="font-medium">Instagram:</span> @wonderverselab, @thewondysociety_</p>
-                    <p><span className="font-medium">YouTube:</span> @thewonderverselabs</p>
-                    <p><span className="font-medium">Lemon8:</span> @thewonderverse</p>
+                  <div className="space-y-2">
+                    <p className="text-[#ff47b0]"><span className="font-medium text-[#ff47b0]">TikTok:</span> @wonderverselab</p>
+                    <p className="text-[#ff47b0]"><span className="font-medium text-[#ff47b0]">Instagram:</span> @wonderverselab, @thewondysociety_</p>
+                    <p className="text-[#ff47b0]"><span className="font-medium text-[#ff47b0]">YouTube:</span> @thewonderverselabs</p>
+                    <p className="text-[#ff47b0]"><span className="font-medium text-[#ff47b0]">Lemon8:</span> @thewonderverse</p>
                   </div>
+
                 </div>
               <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
                 <h3 className="font-semibold mb-2">Discount Code</h3>
@@ -611,7 +602,14 @@ export default function Page() {
                 </div>      
               </div>
             </div>
+            
 
+    <div className="p-6 space-y-6">
+   
+   
+      </div>
+      {/* Add Coming Soon Block here */}
+      <ComingSoonBlock />
            {/* Recent Activity */}
            <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
                   <div className="flex justify-between items-center mb-4">
@@ -632,7 +630,6 @@ export default function Page() {
                           <p className="font-medium">{activity.type}</p>
                           <p className="text-sm text-gray-500">{activity.date}</p>
                         </div>
-                        <span className="text-pink-500 font-semibold">+{activity.points} points</span>
                       </div>
                     ))}
                   </div>
@@ -665,7 +662,13 @@ export default function Page() {
                 )}
                 </div>
                         );
-        case 'messages':  // Add this new case
+                        case 'messages':
+                          return (
+                            <div className="h-screen bg-[#fff6f9]">
+                              <ChallengesSection />
+                            </div>
+                          );
+                        
         return (
           <div className="h-screen bg-[#fff6f9]">
             <MessageDashboard />
@@ -673,224 +676,219 @@ export default function Page() {
         );
         case 'profile':       
           return (
-            <div className="min-h-screen w-full bg-[#fff6f9]">
-              <div className="p-4 md:p-6 max-w-4xl mx-auto"> {/* Updated padding for mobile */}
+            <div className="p-6 max-w-4xl mx-auto">
               {/* Profile Picture Section - Always visible */}
-                <div className="bg-white rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-6 md:p-14 mb-4 border border-pink-200">
-                <div className="flex flex-col md:flex-row items-center gap-4"> {/* Made flex column on mobile */}
-                    <div>
-                      <DomeProfilePicture 
-                        profileImage={profileImage}
-                        isLoading={imageLoading}
-                        size="md"
-                        onImageUpload={handleImageUpload}
-                        onImageRemove={handleRemoveProfilePicture}
-                        showUploadButton
-                      />
-                    </div>
-                    <p className="text-pink-500 text-lg md:text-xxl text-center md:text-left"> {/* Adjusted text size and alignment */}
-                      Not to be dramatic, but your being here literally made our whole day sparkle! ⭐
-                    </p>
+              <div className="bg-#fff6f9 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-14 mb-4">
+                <div className="flex items-center gap-2">
+                  <div>
+                    <DomeProfilePicture 
+                      profileImage={profileImage}
+                      isLoading={imageLoading}
+                      size="md"
+                      onImageUpload={handleImageUpload}
+                      onImageRemove={handleRemoveProfilePicture}
+                      showUploadButton
+                    />
                   </div>
+                  <p className="text-pink-500 text-lg sm:text-xxl text-center mt-4 break-words leading-relaxed sm:leading-snug">
+                    Not to be dramatic, but your being here literally made our whole day sparkle! ⭐
+                  </p>
+                </div>
+                
+              </div>
+        
+              {/* Personal Information Section */}
+              <div className="bg-#fff6f9 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-6 relative">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold">Personal Information</h2>
+                  <button
+                    onClick={() => setIsEditing(!isEditing)}
+                    className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
+                  >
+                    {isEditing ? 'Cancel' : 'Edit'}
+                  </button>
                 </div>
         
-                {/* Personal Information Section */}
-                <div className="bg-[#fff6f9] rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-4 md:p-6 relative"> {/* Updated padding for mobile */}
-                  <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mb-4"> {/* Made flex column on small screens */}
-                    <h2 className="text-lg font-semibold">Personal Information</h2>
-                    <button
-                      onClick={() => setIsEditing(!isEditing)}
-                      className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
-                    >
-                      {isEditing ? 'Cancel' : 'Edit'}
-                    </button>
-                  </div>
-          
                 {isEditing ? (
-                  <div className="border border-green-200 p-4">
-                    <p>Edit form should be here</p>
-                    <form className="space-y-4 md:space-y-6" onSubmit={(e) => e.preventDefault()}> {/* Adjusted spacing */}
-                      {/* Username field */}
+                  // Edit Mode - Form
+                  <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                    {/* Username field */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Username
+                      </label>
+                      <input
+                        type="text"
+                        className={`w-full p-2 border rounded ${
+                          usernameError ? 'border-red-500' : ''
+                        }`}
+                        value={formData?.username || ''}
+                        onChange={(e) => handleInputChange('username', e.target.value)}
+                        placeholder="Choose a unique username"
+                      />
+                      {usernameError && (
+                        <p className="mt-1 text-sm text-red-500">{usernameError}</p>
+                      )}
+                    </div>
+        
+                    {/* First and Last Names */}
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Username
+                          First Name
                         </label>
                         <input
                           type="text"
-                          className={`w-full p-2 border rounded ${
-                            usernameError ? 'border-red-500' : ''
-                          }`}
-                          value={formData?.username || ''}
-                          onChange={(e) => handleInputChange('username', e.target.value)}
-                          placeholder="Choose a unique username"
+                          className="w-full p-2 border rounded"
+                          value={formData?.firstName || ''}
+                          onChange={(e) => handleInputChange('firstName', e.target.value)}
+                          placeholder="Enter first name"
                         />
-                        {usernameError && (
-                          <p className="mt-1 text-sm text-red-500">{usernameError}</p>
-                        )}
                       </div>
-          
-                      {/* First and Last Names */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Made single column on mobile */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            First Name
-                          </label>
-                          <input
-                            type="text"
-                            className="w-full p-2 border rounded"
-                            value={formData?.firstName || ''}
-                            onChange={(e) => handleInputChange('firstName', e.target.value)}
-                            placeholder="Enter first name"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Last Name
-                          </label>
-                          <input
-                            type="text"
-                            className="w-full p-2 border rounded"
-                            value={formData?.lastName || ''}
-                            onChange={(e) => handleInputChange('lastName', e.target.value)}
-                            placeholder="Enter last name"
-                          />
-                        </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Last Name
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded"
+                          value={formData?.lastName || ''}
+                          onChange={(e) => handleInputChange('lastName', e.target.value)}
+                          placeholder="Enter last name"
+                        />
                       </div>
-          
-                      {/* Address Fields */}
-                      <div className="space-y-4"> {/* Added vertical spacing container */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Street Address
-                          </label>
-                          <input
-                            type="text"
-                            className="w-full p-2 md:p-3 border border-gray-300 rounded text-base"
-                            value={formData?.streetAddress || ''}
-                            onChange={(e) => handleInputChange('streetAddress', e.target.value)}
-                            placeholder="Enter street address"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Made single column on mobile */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              City
-                            </label>
-                            <input
-                              type="text"
-                              className="w-full p-2 md:p-3 border border-gray-300 rounded text-base"
-                              value={formData?.city || ''}
-                              onChange={(e) => handleInputChange('city', e.target.value)}
-                              placeholder="Enter city"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              State
-                            </label>
-                            <input
-                              type="text"
-                              className="w-full p-2 md:p-3 border border-gray-300 rounded text-base"
-                              value={formData?.state || ''}
-                              onChange={(e) => handleInputChange('state', e.target.value)}
-                              placeholder="Enter state"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Made single column on mobile */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              ZIP Code
-                            </label>
-                            <input
-                              type="text"
-                              className="w-full p-2 md:p-3 border border-gray-300 rounded text-base"
-                              value={formData?.zipCode || ''}
-                              onChange={(e) => handleInputChange('zipCode', e.target.value)}
-                              placeholder="Enter ZIP code"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Country
-                            </label>
-                            <input
-                              type="text"
-                              className="w-full p-2 md:p-3 border border-gray-300 rounded text-base"
-                              value={formData?.country || ''}
-                              onChange={(e) => handleInputChange('country', e.target.value)}
-                              placeholder="Enter country"
-                            />
-                          </div>
-                        </div>
+                    </div>
+        
+                    {/* Address Fields */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Street Address
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full p-2 border rounded"
+                        value={formData?.streetAddress || ''}
+                        onChange={(e) => handleInputChange('streetAddress', e.target.value)}
+                        placeholder="Enter street address"
+                      />
+                    </div>
+        
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          City
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded"
+                          value={formData?.city || ''}
+                          onChange={(e) => handleInputChange('city', e.target.value)}
+                          placeholder="Enter city"
+                        />
                       </div>
-          
-                      {/* Save Button */}
-                      <div className="flex justify-end mt-6"> {/* Added top margin */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            handleSaveChanges();
-                            setIsEditing(false);
-                          }}
-                          className="w-full sm:w-auto px-6 py-3 bg-pink-500 text-white rounded-lg 
-                            hover:bg-pink-600 transition-colors flex items-center justify-center 
-                            sm:justify-start gap-2 text-base shadow-sm" // Added responsive classes
-                        >
-                          Save Changes
-                          <Link2 size={20} className="hidden sm:block" /> {/* Hide icon on mobile */}
-                        </button>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          State
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded"
+                          value={formData?.state || ''}
+                          onChange={(e) => handleInputChange('state', e.target.value)}
+                          placeholder="Enter state"
+                        />
                       </div>
-                    </form>
-                  </div>
+                    </div>
+        
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          ZIP Code
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded"
+                          value={formData?.zipCode || ''}
+                          onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                          placeholder="Enter ZIP code"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Country
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded"
+                          value={formData?.country || ''}
+                          onChange={(e) => handleInputChange('country', e.target.value)}
+                          placeholder="Enter country"
+                        />
+                      </div>
+                    </div>
+        
+                    {/* Save Button */}
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleSaveChanges();
+                          setIsEditing(false);
+                        }}
+                        className="px-6 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 
+                                flex items-center gap-2"
+                      >
+                        Save Changes
+                        <Link2 size={20} />
+                      </button>
+                    </div>
+                  </form>
                 ) : (
                   // View Mode - Display Only
                   <div className="space-y-6">
                     <div>
                       <h3 className="text-sm font-medium text-gray-500">Username</h3>
-                      <p className="mt-1 text-base">{userData?.username || 'Not set'}</p>
+                      <p className="mt-1">{userData?.username || 'Not set'}</p>
                     </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Made single column on mobile */}
+        
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
                         <h3 className="text-sm font-medium text-gray-500">First Name</h3>
-                        <p className="mt-1 text-base">{userData?.firstName || 'Not set'}</p>
+                        <p className="mt-1">{userData?.firstName || 'Not set'}</p>
                       </div>
                       <div>
                         <h3 className="text-sm font-medium text-gray-500">Last Name</h3>
-                        <p className="mt-1 text-base">{userData?.lastName || 'Not set'}</p>
+                        <p className="mt-1">{userData?.lastName || 'Not set'}</p>
                       </div>
                     </div>
-
+        
                     <div>
                       <h3 className="text-sm font-medium text-gray-500">Address</h3>
-                      <p className="mt-1 text-base break-words">{userData?.streetAddress || 'Not set'}</p>
+                      <p className="mt-1">{userData?.streetAddress || 'Not set'}</p>
                     </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Made single column on mobile */}
+        
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
                         <h3 className="text-sm font-medium text-gray-500">City</h3>
-                        <p className="mt-1 text-base">{userData?.city || 'Not set'}</p>
+                        <p className="mt-1">{userData?.city || 'Not set'}</p>
                       </div>
                       <div>
                         <h3 className="text-sm font-medium text-gray-500">State</h3>
-                        <p className="mt-1 text-base">{userData?.state || 'Not set'}</p>
+                        <p className="mt-1">{userData?.state || 'Not set'}</p>
                       </div>
                     </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Made single column on mobile */}
+        
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
                         <h3 className="text-sm font-medium text-gray-500">ZIP Code</h3>
-                        <p className="mt-1 text-base">{userData?.zipCode || 'Not set'}</p>
+                        <p className="mt-1">{userData?.zipCode || 'Not set'}</p>
                       </div>
                       <div>
                         <h3 className="text-sm font-medium text-gray-500">Country</h3>
-                        <p className="mt-1 text-base">{userData?.country || 'Not set'}</p>
+                        <p className="mt-1">{userData?.country || 'Not set'}</p>
                       </div>
                     </div>
                   </div>
@@ -902,9 +900,9 @@ export default function Page() {
                 <FAQDropdown />
               </div>
             </div>
-          </div>
           );
         
+          
   case 'community':
         return (
           <div className="h-screen flex flex-col bg-pink-50">
@@ -1013,17 +1011,24 @@ export default function Page() {
           <div className="w-full flex flex-col items-center bg-[#FFF6F9] p-4">
       {/* Wonder Wheel */}
         <WonderWheel />
+      {/* Package Designer */}
+      <PackageDesigner />
 
       {/* Scent Quiz Below */}
-    </div>
-  );       
+        </div>
+      );       
         default:
         return null;
     }
   };
 
   return (
-   <>
+    <>
+    <Head>
+    <title>Wonderverse</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/pink-yacht-club.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/pink-yacht-club.png" />
+  </Head>
     {isMobile ? (
       // Mobile Layout
       <div className="min-h-screen bg-wonder-pink">
@@ -1049,6 +1054,7 @@ export default function Page() {
                 currentlyPlaying={currentlyPlaying}
                 setCurrentlyPlaying={setCurrentlyPlaying}
                 activeSection="home"
+                profileImage={profileImage}
               />
             </div>
           </div>
@@ -1094,14 +1100,218 @@ export default function Page() {
                 onImageRemove={handleRemoveProfilePicture}
                 showUploadButton
               />
-              {/* Rest of your profile content */}
-              {/* You can reuse your existing profile form/view here */}
+              <p className="text-pink-500 text-xxl">
+                Not to be dramatic, but your being here literally made our whole day sparkle! ⭐
+              </p>
+              {/* Personal Information Section */}
+              <div className="bg-#fff6f9 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-6 relative">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold">Personal Information</h2>
+                  <button
+                    onClick={() => setIsEditing(!isEditing)}
+                    className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
+                  >
+                    {isEditing ? 'Cancel' : 'Edit'}
+                  </button>
+                </div>
+        
+                {isEditing ? (
+                  // Edit Mode - Form
+                  <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                    {/* Username field */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Username
+                      </label>
+                      <input
+                        type="text"
+                        className={`w-full p-2 border rounded ${
+                          usernameError ? 'border-red-500' : ''
+                        }`}
+                        value={formData?.username || ''}
+                        onChange={(e) => handleInputChange('username', e.target.value)}
+                        placeholder="Choose a unique username"
+                      />
+                      {usernameError && (
+                        <p className="mt-1 text-sm text-red-500">{usernameError}</p>
+                      )}
+                    </div>
+        
+                    {/* First and Last Names */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          First Name
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded"
+                          value={formData?.firstName || ''}
+                          onChange={(e) => handleInputChange('firstName', e.target.value)}
+                          placeholder="Enter first name"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Last Name
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded"
+                          value={formData?.lastName || ''}
+                          onChange={(e) => handleInputChange('lastName', e.target.value)}
+                          placeholder="Enter last name"
+                        />
+                      </div>
+                    </div>
+        
+                    {/* Address Fields */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Street Address
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full p-2 border rounded"
+                        value={formData?.streetAddress || ''}
+                        onChange={(e) => handleInputChange('streetAddress', e.target.value)}
+                        placeholder="Enter street address"
+                      />
+                    </div>
+        
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          City
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded"
+                          value={formData?.city || ''}
+                          onChange={(e) => handleInputChange('city', e.target.value)}
+                          placeholder="Enter city"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          State
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded"
+                          value={formData?.state || ''}
+                          onChange={(e) => handleInputChange('state', e.target.value)}
+                          placeholder="Enter state"
+                        />
+                      </div>
+                    </div>
+        
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          ZIP Code
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded"
+                          value={formData?.zipCode || ''}
+                          onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                          placeholder="Enter ZIP code"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Country
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded"
+                          value={formData?.country || ''}
+                          onChange={(e) => handleInputChange('country', e.target.value)}
+                          placeholder="Enter country"
+                        />
+                      </div>
+                    </div>
+        
+                    {/* Save Button */}
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleSaveChanges();
+                          setIsEditing(false);
+                        }}
+                        className="px-6 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 
+                                flex items-center gap-2"
+                      >
+                        Save Changes
+                        <Link2 size={20} />
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  // View Mode - Display Only
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500">Username</h3>
+                      <p className="mt-1">{userData?.username || 'Not set'}</p>
+                    </div>
+        
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">First Name</h3>
+                        <p className="mt-1">{userData?.firstName || 'Not set'}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Last Name</h3>
+                        <p className="mt-1">{userData?.lastName || 'Not set'}</p>
+                      </div>
+                    </div>
+        
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500">Address</h3>
+                      <p className="mt-1">{userData?.streetAddress || 'Not set'}</p>
+                    </div>
+        
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">City</h3>
+                        <p className="mt-1">{userData?.city || 'Not set'}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">State</h3>
+                        <p className="mt-1">{userData?.state || 'Not set'}</p>
+                      </div>
+                    </div>
+        
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">ZIP Code</h3>
+                        <p className="mt-1">{userData?.zipCode || 'Not set'}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Country</h3>
+                        <p className="mt-1">{userData?.country || 'Not set'}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+        
+              {/* FAQ Dropdown Section */}
+              <div className="mt-8">
+                <FAQDropdown />
+              </div>
             </div>
           )}
           
           {activeSection === 'game' && (
             <div className="min-h-screen bg-pink-50 p-4">
               <WonderWheel />
+              <PackageDesigner />
             </div>
           )}
         </main>
@@ -1132,7 +1342,6 @@ export default function Page() {
                     onImageRemove={handleRemoveProfilePicture}
             />
             <h2 className="font-bold text-lg">{userData?.username || ambassador.name}</h2>
-            <p className="text-sm text-gray-500">{ambassador.tier}</p>
           </div>
 
           {/* Navigation */}

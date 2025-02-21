@@ -3,6 +3,7 @@ import { generateClient } from "aws-amplify/api";
 import type { Schema } from "@/amplify/data/resource";
 import { DailyScentFortune } from './DailyScentFortune';
 import { getCurrentUser } from 'aws-amplify/auth';
+
 type SlotIcon = 'palm' | 'star' | 'burst' | 'green' | 'yellow' | 'circle' | 'heart' | 'sparkle';
 
 interface ScentRecommendation {
@@ -14,7 +15,7 @@ interface ScentRecommendation {
 const questions = [
     {
       question: "What's your age range?",
-      options: ["18-24", "25-34", "35-44", "45+"]
+      options: ["18 and under", "18-30", "31-44", "45+"]
     },
     {
       question: "How would you describe your personal style?",
@@ -288,8 +289,8 @@ const WonderWheel = () => {
 
   return (
     <div className="w-full flex flex-col items-center bg-[#FFF6F9]">
-      <div className="max-w-2xl mx-auto bg-[#fff6f9] rounded-lg shadow-[0_0_10px_#ff00ff] p-8 mb-8">
-        <h1 className="text-4xl font-bold text-pink-500 text-center mb-8">Wonder Wheel</h1>
+      <div className="max-w-2xl mx-auto bg-[#fff6f9] rounded-lg shadow-[0_0_10px_#ff00ff] p-4 md:p-8 mb-8">
+      <h1 className="text-2xl md:text-4xl font-bold text-pink-500 text-center mb-4 md:mb-8">Wonder Wheel</h1>
         
         <div className="flex justify-center gap-4 mb-8">
           {slots.map((icon, index) => (
