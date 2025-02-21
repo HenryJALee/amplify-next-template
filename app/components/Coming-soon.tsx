@@ -36,7 +36,7 @@ const ProductAnnouncement = () => {
         <div className="flex flex-col justify-center space-y-4 bg-[#FFF6F9] p-6 rounded-lg w-full">
           <p className="text-lg text-gray-800 font-medium">
             Get ready bestie - your new comfort-zone companion is about to drop! ✨ Think: cloud-soft luxury 
-            meets quick-absorbing magic. The non-greasy formula actually increases skin's moisture with everyday use.
+            meets quick-absorbing magic. The non-greasy formula actually increases skin&apos;s moisture with everyday use.
           </p>
 
           <div className="flex flex-wrap gap-3">
