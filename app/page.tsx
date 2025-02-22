@@ -29,6 +29,7 @@ import MobileDashboard from "./components/MobileDashboard";
 import PackageDesigner from './components/PackageDesigner';
 import ComingSoonBlock from './components/Coming-soon';
 import ChallengesSection from './components/ChallengeSection';
+import CommunityPage from './components/CommunityPage';
 import Head from 'next/head';
 
 Amplify.configure(outputs);
@@ -111,8 +112,12 @@ export default function Page() {
   const client = generateClient<Schema>();
   const router = useRouter();
   const [communityPosts, setCommunityPosts] = useState<CommunityPostType[]>([]);
-
-    
+  // Add these states at the top of your component
+  const [visiblePosts, setVisiblePosts] = useState<CommunityPostType[]>([]);
+  const [lastKey, setLastKey] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const loadingRef = useRef<HTMLDivElement>(null);
+      
   const [activeSection, setActiveSection] = useState<'home' | 'community' | 'messages' | 'profile' | 'game'>('home');  
   const [ambassador, setAmbassador] = useState<Ambassador>({
     name: "",
@@ -166,6 +171,7 @@ export default function Page() {
         setCommunityPosts(prevPosts => [postWithSignedUrl, ...prevPosts]);
       }
       
+      /*
       setAmbassador({
         name: response.data[0].firstName || "Ambassador",
         username: response.data[0].username || "",
@@ -176,6 +182,7 @@ export default function Page() {
           { type: "Referral", date: "2024-01-23" }
         ]
       });
+      */
 
       setShowVideoUploader(false);
     } catch (error) {
@@ -229,6 +236,7 @@ export default function Page() {
 
   // Add refs for video elements
   const videoRefs = useRef<{ [key: string]: HTMLVideoElement }>({});
+
   useEffect(() => {
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth < 1024);
@@ -237,6 +245,89 @@ export default function Page() {
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
+
+// Add this effect for initial post loading
+useEffect(() => {
+  const loadInitialPosts = async () => {
+    try {
+      const response = await client.models.CommunityPost.list({
+        limit: 5
+      });
+
+      if (response.data) {
+        const processedPosts = await Promise.all(
+          response.data.map(async (post) => {
+            if (post.mediaKey) {
+              const signedURL = await getUrl({
+                key: post.mediaKey,
+                options: { accessLevel: 'guest', validateObjectExistence: true }
+              });
+              return { ...post, mediaUrl: signedURL.url.href };
+            }
+            return post;
+          })
+        );
+
+        setVisiblePosts(processedPosts);
+        setLastKey(response.nextToken || null);
+        setHasMore(!!response.nextToken);
+      }
+    } catch (error) {
+      console.error('Error loading initial posts:', error);
+    }
+  };
+
+  loadInitialPosts();
+}, []);
+
+  // Add this effect for infinite scroll
+  useEffect(() => {
+    const loadPosts = async () => {
+      try {
+        const response = await client.models.CommunityPost.list({
+          limit: 5,
+          nextToken: lastKey
+        });
+
+        if (response.data) {
+          // Process posts to get signed URLs
+          const processedPosts = await Promise.all(
+            response.data.map(async (post) => {
+              if (post.mediaKey) {
+                const signedURL = await getUrl({
+                  key: post.mediaKey,
+                  options: { accessLevel: 'guest', validateObjectExistence: true }
+                });
+                return { ...post, mediaUrl: signedURL.url.href };
+              }
+              return post;
+            })
+          );
+
+          setVisiblePosts(prev => [...prev, ...processedPosts]);
+          setLastKey(response.nextToken || null);
+          setHasMore(!!response.nextToken);
+        }
+      } catch (error) {
+        console.error('Error loading posts:', error);
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          loadPosts();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadingRef.current) {
+      observer.observe(loadingRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [lastKey, hasMore]);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -348,116 +439,7 @@ export default function Page() {
       };
       fetchPosts();
   }, [activeSection]);
-
-  // Add this near your other useEffect hooks
-  useEffect(() => {
-    if (isMobile) {
-      const loadMobileVideos = async () => {
-        try {
-          // Force reload community posts when switching to mobile
-          if (activeSection === 'community' || activeSection === 'home') {
-            const response = await listCommunityPosts();
-            if (response.data) {
-              const posts = await Promise.all(response.data.map(async (post) => {
-                if (post.mediaKey) {
-                  const signedURL = await getUrl({
-                    key: post.mediaKey,
-                    options: {
-                      accessLevel: 'guest',
-                      validateObjectExistence: true
-                    }
-                  });
-                  post.mediaUrl = signedURL.url.href;
-                }
-                return post;
-              }));
-              setCommunityPosts(posts);
-            }
-          }
-        } catch (error) {
-          console.error('Error loading mobile videos:', error);
-        }
-      };
-
-      loadMobileVideos();
-    }
-  }, [isMobile, activeSection]);
-  
-  // Add intersection observer to handle video playback
-  useEffect(() => {
-    if (!communityPosts.length) return;
-  
-    const options = {
-      root: null,
-      rootMargin: '0px',
-      threshold: 0.7,
-    };
-  
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(async (entry) => {
-        const video = entry.target as HTMLVideoElement;
-        
-        if (entry.isIntersecting) {
-          try {
-            // Pause any currently playing video
-            if (currentlyPlaying && currentlyPlaying !== video.id) {
-              const previousVideo = videoRefs.current[currentlyPlaying];
-              if (previousVideo) {
-                previousVideo.pause();
-                previousVideo.currentTime = 0;
-              }
-            }
-            
-            // Play the new video
-            if (video.paused) {
-              await video.play().catch(error => {
-                // Handle play() promise rejection
-                if (error.name !== 'AbortError') {
-                  console.error('Video playback error:', error);
-                }
-              });
-              setCurrentlyPlaying(video.id);
-            }
-          } catch (error) {
-            console.error('Error handling video playback:', error);
-          }
-        } else {
-          // If video is leaving viewport
-          try {
-            video.pause();
-            video.currentTime = 0;
-            if (currentlyPlaying === video.id) {
-              setCurrentlyPlaying(null);
-            }
-          } catch (error) {
-            console.error('Error pausing video:', error);
-          }
-        }
-      });
-    }, options);
-  
-    // Observe all videos
-    Object.values(videoRefs.current).forEach((video) => {
-      if (video) {
-        observer.observe(video);
-      }
-    });
-  
-    // Cleanup function
-    return () => {
-      // Pause all videos and disconnect observer
-      Object.values(videoRefs.current).forEach((video) => {
-        if (video) {
-          video.pause();
-          observer.unobserve(video);
-        }
-      });
-      observer.disconnect();
-      setCurrentlyPlaying(null);
-    };
-  }, [communityPosts, currentlyPlaying]); // Add currentlyPlaying to dependencies
-
-  
+    
   // Handle input changes
   const handleInputChange = (field: keyof User, value: string) => {
     setFormData(prev => ({
@@ -636,7 +618,7 @@ export default function Page() {
                 </div>  {/* ✅ Close "Recent Activity" div here */}
 
 
-                {/* ✅ Video Posts - Now OUTSIDE the restricted div */}
+                {/* ✅ Video Posts - Now OUTSIDE the restricted div }
                 <div className="mt-6 bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
                   <h3 className="font-semibold mb-4">Recent Video Uploads</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -903,107 +885,10 @@ export default function Page() {
           );
         
           
-  case 'community':
-        return (
-          <div className="h-screen flex flex-col bg-pink-50">
-                <AmbassadorSpotlight />
-          
-                <div className="min-h-screen bg-[#FFF6F9] py-8">
-                  {isLoading && (
-                    <div className="flex items-center justify-center h-[70vh]">
-                      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-pink-500" />
-                    </div>
-                  )}
-            
-                  {error && (
-                    <div className="flex items-center justify-center h-[70vh]">
-                      <p className="text-red-500">{error}</p>
-                    </div>
-                  )}
-            
-                  {!isLoading && !error && communityPosts.length === 0 && (
-                    <div className="flex items-center justify-center h-[70vh]">
-                      <p className="text-gray-500">No posts yet</p>
-                    </div>
-                  )}
-            
-                  {!isLoading && !error && communityPosts.length > 0 && (
-                    <div className="container mx-auto px-4">
-                      {communityPosts.map((post) => (
-                        <div key={post.id} className="mb-16 relative max-w-md mx-auto rounded-lg overflow-hidden shadow-lg">
-                         <video
-                            ref={el => {
-                              if (el && post.id) {
-                                videoRefs.current[post.id] = el;
-                              }
-                            }}
-                            className="w-full h-auto max-w-md aspect-[9/16] object-contain"
-                            loop
-                            playsInline
-                            muted  // ✅ Keep this so videos start muted
-                            preload="auto"
-                          >
-                            <source src={post.mediaUrl ?? undefined} type="video/mp4" />
-                            Your browser does not support the video tag.
-                          </video>
-                           {/* 🔊 Mute/Unmute Button */}
-                          <button
-                            onClick={() => {
-                              const video = videoRefs.current[String(post.id)]; // ✅ Ensure post.id is a string
-                              if (video) {
-                                video.muted = !video.muted; // ✅ Toggle mute state
-                              }
-                            }}
-                            className="absolute bottom-4 left-4 bg-black/50 text-white p-2 rounded-full"
-                          >
-                            {videoRefs.current[String(post.id)]?.muted ? "🔇" : "🔊"}
-                          </button>
-                          
-          
-                         {/* Overlay for post information */}
-                            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent"
-                                style={{ minHeight: "60px", maxHeight: "auto", paddingBottom: "10px" }} // ✅ Ensures proper height
-                            >
-
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden">
-                              <img
-                                src={post.creatorProfileImage || "/default-avatar.png"}  // ✅ Pull from fetched profile image
-                                alt={post.creator ?? "User content"}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <span className="text-white font-medium">
-                              {post.creator && post.creator !== "unknown" ? `@${post.creator}` : "Unknown User"} 
-                            </span>
-                          </div>
-                          <p className="text-white text-sm">{post.caption}</p>
-                        </div>
-
-          
-                          {/* Interaction buttons */}
-                          <div className="absolute right-4 bottom-20 flex flex-col gap-4">
-                            <button className="bg-pink-500/80 p-3 rounded-full text-white hover:bg-pink-600 transition-colors">
-                              <Heart size={20} />
-                              <span className="text-xs block mt-1">{post.likes || 0}</span>
-                            </button>
-                            
-                            <button className="bg-pink-500/80 p-3 rounded-full text-white hover:bg-pink-600 transition-colors">
-                              <Star size={20} />
-                              <span className="text-xs block mt-1">{post.points || 0}</span>
-                            </button>
-          
-                            <button className="bg-pink-500/80 p-3 rounded-full text-white hover:bg-pink-600 transition-colors">
-                              <Share2 size={20} />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
+        case 'community':
+              return (
+                    <CommunityPage isMobile={false} />
+                  );
           
         
         case 'game':
@@ -1061,29 +946,9 @@ export default function Page() {
         )}
 
         {activeSection === 'community' && (
-          <div className="min-h-screen bg-pink-50">
-            <AmbassadorSpotlight />
-            <div className="container mx-auto px-4">
-              {isLoading ? (
-                <div className="flex items-center justify-center h-[70vh]">
-                  <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-pink-500" />
-                </div>
-              ) : communityPosts.map((post) => (
-                <div key={post.id} className="mb-8">
-                  <VideoPost
-                    post={post}
-                    videoRefs={videoRefs}
-                    currentlyPlaying={currentlyPlaying}
-                    setCurrentlyPlaying={setCurrentlyPlaying}
-                    style={{ maxWidth: '100%', height: 'auto' }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+            <CommunityPage isMobile={true} />
         )}
 
-          
           {activeSection === 'messages' && (
             <div className="min-h-screen bg-pink-50">
               <MessageDashboard />
