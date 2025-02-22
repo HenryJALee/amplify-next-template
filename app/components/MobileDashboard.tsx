@@ -72,7 +72,7 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
             </div>
             {/* Community Posts */}
             <div className="space-y-4">
-              {communityPosts.map((post) => (
+              {/*communityPosts.map((post) => (
                 <VideoPost
                   key={post.id}
                   post={post}
@@ -81,7 +81,7 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
                   setCurrentlyPlaying={setCurrentlyPlaying}
                   isMobile={true}
                 />
-              ))}
+              ))*/}
             </div>
           </div>
         );
@@ -223,7 +223,7 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
             {/* Recent Videos */}
             <div className="space-y-4">
               <h3 className="font-semibold">Recent Videos</h3>
-              {communityPosts.map((post) => (
+              {/*communityPosts.map((post) => (
                 <VideoPost
                   key={post.id}
                   post={post}
@@ -232,7 +232,7 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
                   setCurrentlyPlaying={setCurrentlyPlaying}
                   isMobile={true}
                 />
-              ))}
+              ))*/}
             </div>
           </div>
         );

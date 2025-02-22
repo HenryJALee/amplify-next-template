@@ -18,25 +18,25 @@ interface VideoPostProps {
 
 export default function VideoPost({ post, onLike }: VideoPostProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
+  //const [isVisible, setIsVisible] = useState(false);
+  //const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsVisible(entry.isIntersecting);
+        //setIsVisible(entry.isIntersecting);
         if (entry.isIntersecting) {
           // Video is in view
           videoRef.current?.play().catch(error => {
             console.log('Autoplay prevented:', error);
           });
-          setIsPlaying(true);
+         // setIsPlaying(true);
         } else {
           // Video is out of view
           videoRef.current?.pause();
-          setIsPlaying(false);
+          //setIsPlaying(false);
         }
       },
       {
