@@ -30,6 +30,8 @@ import PackageDesigner from './components/PackageDesigner';
 import ComingSoonBlock from './components/Coming-soon';
 import ChallengesSection from './components/ChallengeSection';
 import Head from 'next/head';
+import PinkYachtClubBanner from './components/PinkYachtClubBanner';
+import { Instagram, Youtube, MessageCircle, Github } from 'lucide-react';
 
 Amplify.configure(outputs);
 
@@ -548,10 +550,63 @@ export default function Page() {
                   <p className="text-[#ff47b0]">Whimsical Fragrance meets Clinically Effective and Sensory Friendly Bodycare...And this is where you come in!</p>
                   
                   <div className="space-y-2">
-                    <p className="text-[#ff47b0]"><span className="font-medium text-[#ff47b0]">TikTok:</span> @wonderverselab</p>
-                    <p className="text-[#ff47b0]"><span className="font-medium text-[#ff47b0]">Instagram:</span> @wonderverselab, @thewondysociety_</p>
-                    <p className="text-[#ff47b0]"><span className="font-medium text-[#ff47b0]">YouTube:</span> @thewonderverselabs</p>
-                    <p className="text-[#ff47b0]"><span className="font-medium text-[#ff47b0]">Lemon8:</span> @thewonderverse</p>
+                  <div className="space-y-4">
+                  <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-4 text-[#ff47b0]">
+              {/* TikTok */}
+              <div className="flex items-center gap-2">
+                <a 
+                  href="https://www.tiktok.com/@wonderverselab" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:opacity-80 transition-opacity"
+                >
+                  <MessageCircle size={24} />
+                </a>
+                <span className="font-medium text-[#ff47b0]">TikTok</span>
+              </div>
+              
+              {/* Instagram */}
+              <div className="flex items-center gap-2">
+                <a 
+                  href="https://www.instagram.com/wonderverselabs/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:opacity-80 transition-opacity"
+                >
+                  <Instagram size={24} />
+                </a>
+                <span className="font-medium text-[#ff47b0]">Instagram</span>
+              </div>
+              
+              {/* YouTube */}
+              <div className="flex items-center gap-2">
+                <a 
+                  href="https://www.youtube.com/@TheWonderverseLabs/shorts" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:opacity-80 transition-opacity"
+                >
+                  <Youtube size={24} />
+                </a>
+                <span className="font-medium text-[#ff47b0]">YouTube</span>
+              </div>
+              
+              {/* Lemon8 */}
+              <div className="flex items-center gap-2">
+                <a 
+                  href="https://www.lemon8-app.com/@wonderverselab?region=us" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:opacity-80 transition-opacity"
+                >
+                  <Github size={24} />
+                </a>
+                <span className="font-medium text-[#ff47b0]">Lemon8</span>
+              </div>
+            </div>
+          </div>
+          </div>
                   </div>
 
                 </div>
@@ -591,6 +646,8 @@ export default function Page() {
       </div>
       {/* Add Coming Soon Block here */}
       <ComingSoonBlock />
+       {/* Add Pink Yacht Club Banner here - THIS IS THE NEW LINE YOU'RE ADDING */}
+       <PinkYachtClubBanner />
            {/* Recent Activity */}
            <div className="bg-#fff6f9 p-6 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)]">
                   <div className="flex justify-between items-center mb-4">
@@ -1035,7 +1092,10 @@ export default function Page() {
                 setCurrentlyPlaying={setCurrentlyPlaying}
                 activeSection="home"
                 profileImage={profileImage}
-              />
+                onImageUpload={handleImageUpload}  // This function comes from your useProfileImage hook
+                onImageRemove={handleRemoveProfilePicture}  // This function comes from your useProfileImage hook
+                isLoadingProfile={imageLoading} // Make sure imageLoading exists in your state
+              />       
             </div>
           </div>
         )}
@@ -1062,30 +1122,36 @@ export default function Page() {
             </div>
           </div>
         )}
+          
+        {activeSection === 'messages' && (
+          <div className="min-h-screen bg-pink-50">
+            <ChallengesSection />
+          </div>
+        )}
 
-          
-          {activeSection === 'messages' && (
-            <div className="min-h-screen bg-pink-50">
-              <MessageDashboard />
-            </div>
-          )}
-          
           {activeSection === 'profile' && (
-            <div className="min-h-screen bg-pink-50 p-4">
-              <DomeProfilePicture
-                profileImage={profileImage}
-                isLoading={imageLoading}
-                size="md"
-                onImageUpload={handleImageUpload}
-                onImageRemove={handleRemoveProfilePicture}
-                showUploadButton
-              />
-              <p className="text-pink-500 text-xxl">
-                Not to be dramatic, but your being here literally made our whole day sparkle! ⭐
-              </p>
-              {/* Personal Information Section */}
-              <div className="bg-#fff6f9 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-6 relative">
-                <div className="flex justify-between items-center mb-4">
+                <div className="min-h-screen bg-pink-50 p-4">
+                  {/* Profile Picture and Welcome Message - side by side */}
+                  <div className="bg-white p-6 rounded-lg shadow-sm mb-4">
+                    <div className="flex items-center gap-4">
+                      <div className="flex-shrink-0">
+                        <DomeProfilePicture
+                          profileImage={profileImage}
+                          isLoading={imageLoading}
+                          size="md"
+                          onImageUpload={handleImageUpload}
+                          onImageRemove={handleRemoveProfilePicture}
+                          showUploadButton
+                        />
+                      </div>
+                      <p className="text-pink-500 text-lg">
+                        Not to be dramatic, but your being here literally made our whole day sparkle! ⭐
+                      </p>
+                    </div>
+                  </div>
+                  {/* Personal Information Section */}
+                  <div className="bg-#fff6f9 rounded-lg shadow-[0_0_10px_rgba(255,71,176,0.2)] p-6 relative">
+                              <div className="flex justify-between items-center mb-4">
                   <h2 className="text-lg font-semibold">Personal Information</h2>
                   <button
                     onClick={() => setIsEditing(!isEditing)}
