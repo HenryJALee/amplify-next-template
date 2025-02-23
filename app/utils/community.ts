@@ -24,11 +24,15 @@ data: {
   mediaKey: string;
 }): Promise<any> => {  
   try {
+    const maxDate = new Date('9999-12-31T23:59:59Z').getTime();
+    const now = new Date().getTime();
+  
     const response = await client.models.CommunityPost.create({
       creator: data.creator,
       caption: data.caption,
       mediaUrl: data.mediaUrl.replace('community-videos', 'compressed-videos'),
-      mediaKey: data.mediaKey.replace('community-videos', 'compressed-videos').replace(/\.(mp4|mov)$/, '.mp4')
+      mediaKey: data.mediaKey.replace('community-videos', 'compressed-videos').replace(/\.(mp4|mov)$/, '.mp4'),
+      sortOrder: parseInt((maxDate - now).toString())
     });
     return response;
   } catch (error) {
