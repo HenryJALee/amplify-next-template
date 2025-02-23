@@ -18,9 +18,6 @@ const Profile: React.FC<ProfileProps> = ({
   ambassador,
   setShowVideoUploader,
   communityPosts,
-  videoRefs,
-  currentlyPlaying,
-  setCurrentlyPlaying,
   isLoading
 }) => {
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -92,10 +89,6 @@ const Profile: React.FC<ProfileProps> = ({
               <div key={post.id} className="relative">
                 <VideoPost
                   post={post}
-                  videoRefs={videoRefs}
-                  currentlyPlaying={currentlyPlaying}
-                  setCurrentlyPlaying={setCurrentlyPlaying}
-                  style={{ maxWidth: '100%', margin: '0 auto' }}
                 />
               </div>
             ))

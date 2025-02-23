@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link2 } from 'lucide-react';
-import VideoPost from './VideoPost';
 import AmbassadorSpotlight from './AmbassadorSpotlight';
 import WonderWheel from './WonderWheel';
 import DomeProfilePicture from './DomeProfilePicture';
@@ -50,10 +49,6 @@ interface MobileDashboardProps {
 const MobileDashboard: React.FC<MobileDashboardProps> = ({
   ambassador,
   setShowVideoUploader,
-  communityPosts,
-  videoRefs,
-  currentlyPlaying,
-  setCurrentlyPlaying,
   activeSection,
   profileImage
   

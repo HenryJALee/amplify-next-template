@@ -37,6 +37,7 @@ try {
   console.error('Error configuring Amplify:', error);
 }
 
+
 const logintheme = createTheme({
   name: 'custom-theme',
   tokens: {
