@@ -45,8 +45,13 @@ const schema = a.schema({
         likes: a.integer(),
         points: a.integer(),
         createdAt: a.string(),
-        userID: a.string()
-    }).authorization((allow) => [allow.authenticated()]),
+        userID: a.string(),
+        sortOrder: a.integer(),
+    }).authorization((allow) => [allow.authenticated()])
+      .secondaryIndexes((index) => [
+        index("mediaType")
+          .sortKeys(["sortOrder"])
+      ]),
 
     PrizeRecord:  a.model({
       id: a.id(),
