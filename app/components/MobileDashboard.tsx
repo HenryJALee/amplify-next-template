@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link2 } from 'lucide-react';
-import VideoPost from './VideoPost';
 import AmbassadorSpotlight from './AmbassadorSpotlight';
 import WonderWheel from './WonderWheel';
 import DomeProfilePicture from './DomeProfilePicture';
@@ -56,10 +55,6 @@ interface MobileDashboardProps {
 const MobileDashboard: React.FC<MobileDashboardProps> = ({
   ambassador,
   setShowVideoUploader,
-  communityPosts,
-  videoRefs,
-  currentlyPlaying,
-  setCurrentlyPlaying,
   activeSection,
   profileImage,
   onImageUpload,
@@ -84,7 +79,7 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
             </div>
             {/* Community Posts */}
             <div className="space-y-4">
-              {communityPosts.map((post) => (
+              {/*communityPosts.map((post) => (
                 <VideoPost
                   key={post.id}
                   post={post}
@@ -93,7 +88,7 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
                   setCurrentlyPlaying={setCurrentlyPlaying}
                   isMobile={true}
                 />
-              ))}
+              ))*/}
             </div>
           </div>
         );
@@ -385,7 +380,7 @@ case 'profile':
             {/* Recent Videos */}
             <div className="space-y-4">
               <h3 className="font-semibold">Recent Videos</h3>
-              {communityPosts.map((post) => (
+              {/*communityPosts.map((post) => (
                 <VideoPost
                   key={post.id}
                   post={post}
@@ -394,7 +389,7 @@ case 'profile':
                   setCurrentlyPlaying={setCurrentlyPlaying}
                   isMobile={true}
                 />
-              ))}
+              ))*/}
             </div>
           </div>
         );
