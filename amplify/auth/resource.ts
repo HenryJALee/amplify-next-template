@@ -14,7 +14,7 @@ export const auth = defineAuth({
          userInvitation: {
            emailSubject: "Welcome to the Wonder Society!",
            emailBody: (user, code) =>
-             `We're happy to have you! You can now login with username ${user()} and temporary password ${code()}`, 
+             `We're so excited to have you on board. You can now login to wonder-society.com to win merch, play games, and check out other ambassadors with username ${user()} and temporary password ${code()} Don't forget to update your profile!`, 
          },
        },
       },
