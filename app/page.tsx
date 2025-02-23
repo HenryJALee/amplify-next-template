@@ -4,7 +4,7 @@ import { generateClient } from "aws-amplify/data";
 import { getUrl } from 'aws-amplify/storage';
 import type { Schema } from "@/amplify/data/resource";
 import React, { useRef, useState, useEffect } from 'react';
-import { Star, Link2, Heart, Share2, User, LogOut } from 'lucide-react';
+import { Link2, User, LogOut } from 'lucide-react';
 import { signOut, getCurrentUser } from 'aws-amplify/auth';
 import { useRouter } from 'next/navigation';
 import { VideoUploader } from './components/VideoUploader';
@@ -20,10 +20,8 @@ import WONDERLOGO_UPDATED from '../public/icons/Wonderverse-logo-update.png';
 import MessageDashboard from './components/MessageDashboard';
 import DomeProfilePicture from './components/DomeProfilePicture';
 import { useProfileImage } from './hooks/useProfileImage';
-import AmbassadorSpotlight from './components/AmbassadorSpotlight';
 import WonderWheel from './components/WonderWheel';;
 import FAQDropdown from './components/FAQDropdown';
-import VideoPost from './components/VideoPost';
 import MobileNav from './components/MobileNav';
 import MobileDashboard from "./components/MobileDashboard";
 import PackageDesigner from './components/PackageDesigner';
@@ -101,8 +99,8 @@ export default function Page() {
   const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
   const [userData, setUserData] = useState<User | null>(null);
   const [usernameError, setUsernameError] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  //const [isLoading, setIsLoading] = useState(false);
+  //const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [formData, setFormData] = useState<Partial<AmbassadorUser>>({
@@ -113,10 +111,10 @@ export default function Page() {
   const router = useRouter();
   const [communityPosts, setCommunityPosts] = useState<CommunityPostType[]>([]);
   // Add these states at the top of your component
-  const [visiblePosts, setVisiblePosts] = useState<CommunityPostType[]>([]);
-  const [lastKey, setLastKey] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-  const loadingRef = useRef<HTMLDivElement>(null);
+  //const [visiblePosts, setVisiblePosts] = useState<CommunityPostType[]>([]);
+  //onst [lastKey, setLastKey] = useState<string | null>(null);
+  //const [hasMore, setHasMore] = useState(true);
+  //const loadingRef = useRef<HTMLDivElement>(null);
       
   const [activeSection, setActiveSection] = useState<'home' | 'community' | 'messages' | 'profile' | 'game'>('home');  
   const [ambassador, setAmbassador] = useState<Ambassador>({
@@ -246,96 +244,14 @@ export default function Page() {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-// Add this effect for initial post loading
-useEffect(() => {
-  const loadInitialPosts = async () => {
-    try {
-      const response = await client.models.CommunityPost.list({
-        limit: 5
-      });
-
-      if (response.data) {
-        const processedPosts = await Promise.all(
-          response.data.map(async (post) => {
-            if (post.mediaKey) {
-              const signedURL = await getUrl({
-                key: post.mediaKey,
-                options: { accessLevel: 'guest', validateObjectExistence: true }
-              });
-              return { ...post, mediaUrl: signedURL.url.href };
-            }
-            return post;
-          })
-        );
-
-        setVisiblePosts(processedPosts);
-        setLastKey(response.nextToken || null);
-        setHasMore(!!response.nextToken);
-      }
-    } catch (error) {
-      console.error('Error loading initial posts:', error);
-    }
-  };
-
-  loadInitialPosts();
-}, []);
-
-  // Add this effect for infinite scroll
-  useEffect(() => {
-    const loadPosts = async () => {
-      try {
-        const response = await client.models.CommunityPost.list({
-          limit: 5,
-          nextToken: lastKey
-        });
-
-        if (response.data) {
-          // Process posts to get signed URLs
-          const processedPosts = await Promise.all(
-            response.data.map(async (post) => {
-              if (post.mediaKey) {
-                const signedURL = await getUrl({
-                  key: post.mediaKey,
-                  options: { accessLevel: 'guest', validateObjectExistence: true }
-                });
-                return { ...post, mediaUrl: signedURL.url.href };
-              }
-              return post;
-            })
-          );
-
-          setVisiblePosts(prev => [...prev, ...processedPosts]);
-          setLastKey(response.nextToken || null);
-          setHasMore(!!response.nextToken);
-        }
-      } catch (error) {
-        console.error('Error loading posts:', error);
-      }
-    };
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          loadPosts();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (loadingRef.current) {
-      observer.observe(loadingRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [lastKey, hasMore]);
 
   useEffect(() => {
     const fetchPosts = async () => {
         console.log("🔄 fetchPosts() function is running..."); // ✅ Check if function runs
 
         if (activeSection === 'community') {
-            setIsLoading(true);
-            setError(null);
+            //setIsLoading(true);
+            //setError(null);
             try {
                 console.log("📡 Fetching posts from listCommunityPosts()...");
 
@@ -431,9 +347,9 @@ useEffect(() => {
                 setCommunityPosts([...posts]); // ✅ Ensures state updates properly
             } catch (error) {
                 console.error("❌ Error fetching posts:", error);
-                setError("Failed to load posts");
+                //setError("Failed to load posts");
             } finally {
-                setIsLoading(false);
+                //setIsLoading(false);
             }
           }
       };
