@@ -72,7 +72,7 @@ const PinkYachtClubBanner = () => {
         </div>
       </div>
       <p className="text-[#ff47b0] text-center mt-6 italic">
-      Pack your coziest beach vibes ✨ Pink Yacht Club wraps you in a dreamy blend of sun-warmed hibiscus, lychee kisses, and sweet-as-sunset notes of peach and vanilla. It's like that perfect beachy moment when you're wrapped in the softest towel, watching the waves roll in 🌊
+      Pack your coziest beach vibes ✨ Pink Yacht Club wraps you in a dreamy blend of sun-warmed hibiscus, lychee kisses, and sweet-as-sunset notes of peach and vanilla. It&apos;s like that perfect beachy moment when you&apos;re wrapped in the softest towel, watching the waves roll in 🌊
       </p>
     </div>
   );
