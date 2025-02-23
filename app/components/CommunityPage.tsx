@@ -39,12 +39,23 @@ export default function CommunityPage({ isMobile }: CommunityPageProps) {
       try {
         setIsLoading(true);
         const response = await client.models.CommunityPost.list({
-          limit: 5
+          limit: 5,
+          nextToken: lastKey
         });
+        const thirtySecondsAgo = new Date(Date.now() - 30 * 1000); // 30 seconds ago
 
-        if (response.data) {
+        const filteredPosts = response.data
+        .filter(post => {
+            if (!post.createdAt) {
+                return false;
+            }
+            const postDate = new Date(post.createdAt);
+            return postDate <= thirtySecondsAgo;
+        })
+
+        if (filteredPosts) {
           const processedPosts = await Promise.all(
-            response.data.map(async (post) => {
+            filteredPosts.map(async (post) => {
               if (post.mediaKey) {
                 const signedURL = await getUrl({
                   key: post.mediaKey,
