@@ -289,25 +289,26 @@ const WonderWheel = () => {
 
   return (
     <div className="w-full flex flex-col items-center bg-[#FFF6F9]">
-      <div className="max-w-2xl mx-auto bg-[#fff6f9] rounded-lg shadow-[0_0_10px_#ff00ff] p-4 md:p-8 mb-8">
-      <h1 className="text-2xl md:text-4xl font-bold text-pink-500 text-center mb-4 md:mb-8">Wonder Wheel</h1>
-        
-        <div className="flex justify-center gap-4 mb-8">
+      {/* Reduce the max-width for mobile */}
+    <div className="w-full max-w-sm mx-auto bg-[#fff6f9] rounded-lg shadow-[0_0_10px_#ff00ff] p-4 mb-8">
+      <h1 className="text-2xl font-bold text-pink-500 text-center mb-4">Wonder Wheel</h1>
+
+        <div className="flex justify-center gap-2 md:gap-4 mb-6">
           {slots.map((icon, index) => (
             <div
               key={index}
-              className="w-32 h-32 border-4 border-[#ff00ff] rounded-lg bg-[#fff6f9] flex items-center justify-center overflow-hidden"
-              style={{ 
-                animation: isSpinning ? 'pulse 0.5s infinite' : 'none',
-                boxShadow: '0 0 10px #ff00ff'
-              }}
-            >
-              <div className="relative w-24 h-24 flex items-center justify-center">
-                <img
-                  src={icons[icon]}
-                  alt={icon}
-                  className={`w-full h-full object-contain ${isSpinning ? 'animate-spin' : ''}`}
-                />
+              className="w-24 h-24 md:w-32 md:h-32 border-4 border-[#ff00ff] rounded-lg bg-[#fff6f9] flex items-center justify-center overflow-hidden"
+            style={{ 
+              animation: isSpinning ? 'pulse 0.5s infinite' : 'none',
+              boxShadow: '0 0 10px #ff00ff'
+            }}
+          >
+              <div className="relative w-16 h-16 md:w-24 md:h-24 flex items-center justify-center">
+              <img
+                src={icons[icon]}
+                alt={icon}
+                className={`w-full h-full object-contain ${isSpinning ? 'animate-spin' : ''}`}
+              />
               </div>
             </div>
           ))}

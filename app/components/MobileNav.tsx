@@ -78,7 +78,6 @@ const MobileNav: React.FC<MobileNavProps> = ({
       {/* Mobile Menu */}
       <div className={`
         fixed inset-0 bg-white z-50 transition-transform duration-300 ease-in-out
-        fixed inset-0 bg-white z-50 transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         pt-16 pb-6 px-4
       `}>
@@ -133,7 +132,6 @@ const MobileNav: React.FC<MobileNavProps> = ({
             width={24}
             height={24}
           />
-        
               <span>{item.label}</span>
             </button>
           ))}
