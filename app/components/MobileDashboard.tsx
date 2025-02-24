@@ -242,7 +242,7 @@ case 'profile':
                           profileImage={profileImage?.url || null}
                           isLoading={false}
                           size="sm"
-                          showUploadButton={true}
+                          showUploadButton={false}
                           onImageUpload={onImageUpload}
                           onImageRemove={onImageRemove}
                         />

@@ -39,9 +39,9 @@ export default function CommunityPage({ isMobile }: CommunityPageProps) {
       try {
         setIsLoading(true);
         const response = await client.models.CommunityPost.list({
-          limit: 5,
-          nextToken: lastKey
+          limit: 5
         });
+        
         const thirtySecondsAgo = new Date(Date.now() - 30 * 1000); // 30 seconds ago
 
         const filteredPosts = response.data
