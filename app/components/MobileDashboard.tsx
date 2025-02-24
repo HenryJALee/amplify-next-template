@@ -46,7 +46,7 @@ interface MobileDashboardProps {
   currentlyPlaying: string | null;
   setCurrentlyPlaying: (id: string | null) => void;
   activeSection: 'home' | 'community' | 'messages' | 'profile' | 'game';
-  profileImage: { url: string } | null;
+  profileImage: string | null;
   onImageUpload?: (file: File) => Promise<void>; // Change from void to Promise<void>
   onImageRemove?: () => Promise<void>;
   isLoadingProfile?: boolean; // A
@@ -56,7 +56,7 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
   ambassador,
   setShowVideoUploader,
   activeSection,
-  profileImage,
+  profileImage ,
   onImageUpload,
   onImageRemove  
 }) => {
@@ -150,7 +150,7 @@ case 'profile':
         <div className="flex items-center gap-4">
           <div className="flex-shrink-0">
             <DomeProfilePicture 
-              profileImage={profileImage?.url || null}
+              profileImage={profileImage || null}
               isLoading={false}
               size="md"
               showUploadButton={true}
@@ -237,17 +237,17 @@ case 'profile':
                   <div className="bg-white p-4 rounded-lg shadow-sm">
                     <div className="flex items-start gap-4 mb-4">
                       {/* Profile Picture */}
-                      <div className="flex-shrink-0">
+                      <div className="flex-shrink-0 flex flex-col items-center">
                         <DomeProfilePicture 
-                          profileImage={profileImage?.url || null}
+                          profileImage={profileImage || null}
                           isLoading={false}
                           size="sm"
-                          showUploadButton={true}
+                          showUploadButton={false}
                           onImageUpload={onImageUpload}
                           onImageRemove={onImageRemove}
                         />
+                     <p className="text-[#ff47b0] mt-2">{ambassador.username}</p>
                       </div>
-                      
                       {/* Welcome Text */}
                       <div className="flex-1">
                         <h3 className="font-semibold text-xl text-[#ff47b0] mb-2">
