@@ -237,7 +237,7 @@ case 'profile':
                   <div className="bg-white p-4 rounded-lg shadow-sm">
                     <div className="flex items-start gap-4 mb-4">
                       {/* Profile Picture */}
-                      <div className="flex-shrink-0 flex flex-col items-center">
+                      <div className="flex-shrink-0 flex flex-col items-center">                        
                         <DomeProfilePicture 
                           profileImage={profileImage || null}
                           isLoading={false}
