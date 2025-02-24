@@ -8,7 +8,7 @@ import PackageDesigner from './PackageDesigner';
 import ChallengesSection from './ChallengeSection';
 import PinkYachtClubBanner from '../components/PinkYachtClubBanner';
 import { Instagram, Youtube, MessageCircle, Github } from 'lucide-react';
-
+import { ProfileImageType } from '../hooks/useProfileImage';
 
 
 type Activity = {
@@ -46,7 +46,7 @@ interface MobileDashboardProps {
   currentlyPlaying: string | null;
   setCurrentlyPlaying: (id: string | null) => void;
   activeSection: 'home' | 'community' | 'messages' | 'profile' | 'game';
-  profileImage: string | null;
+  profileImage: ProfileImageType | null;
   onImageUpload?: (file: File) => Promise<void>; // Change from void to Promise<void>
   onImageRemove?: () => Promise<void>;
   isLoadingProfile?: boolean; // A
@@ -150,7 +150,7 @@ case 'profile':
         <div className="flex items-center gap-4">
           <div className="flex-shrink-0">
             <DomeProfilePicture 
-              profileImage={profileImage || null}
+              profileImage={profileImage?.url || null}
               isLoading={false}
               size="md"
               showUploadButton={true}
@@ -237,9 +237,9 @@ case 'profile':
                   <div className="bg-white p-4 rounded-lg shadow-sm">
                     <div className="flex items-start gap-4 mb-4">
                       {/* Profile Picture */}
-                      <div className="flex-shrink-0 flex flex-col items-center">
+                      <div className="flex-shrink-0 flex flex-col items-center">                        
                         <DomeProfilePicture 
-                          profileImage={profileImage || null}
+                          profileImage={profileImage}
                           isLoading={false}
                           size="sm"
                           showUploadButton={false}
