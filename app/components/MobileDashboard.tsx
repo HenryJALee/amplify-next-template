@@ -56,7 +56,7 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
   ambassador,
   setShowVideoUploader,
   activeSection,
-  profileImage,
+  profileImage ,
   onImageUpload,
   onImageRemove  
 }) => {
@@ -246,7 +246,7 @@ case 'profile':
                           onImageUpload={onImageUpload}
                           onImageRemove={onImageRemove}
                         />
-                      <p className="text-[#ff47b0] mt-2">{ambassador.username}</p>  
+                     <p className="text-[#ff47b0] mt-2">{ambassador.username}</p>
                       </div>
                       {/* Welcome Text */}
                       <div className="flex-1">
