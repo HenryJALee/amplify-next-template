@@ -107,7 +107,7 @@ export const VideoUploader: React.FC<VideoUploaderProps> = ({
           <FileUploader
             onFileSelect={handleVideoUpload}
             accept="video/*"
-            maxSize={100 * 1024 * 1024}
+            maxSize={50 * 1024 * 1024}
           >
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center">
               <Video className="w-8 h-8 text-gray-400 mb-2" />
@@ -115,7 +115,7 @@ export const VideoUploader: React.FC<VideoUploaderProps> = ({
                 Drag and drop or click to upload your video
               </p>
               <p className="text-xs text-gray-400 mt-1">
-                Maximum file size: 100MB
+                Maximum file size: 50MB
               </p>
               {isLoading && (
                 <div className="w-full mt-4">
