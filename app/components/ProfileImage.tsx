@@ -67,7 +67,7 @@ export const ProfileImage: React.FC<ProfileImageProps> = ({
           <FileUploader
             onFileSelect={handleFileSelect}
             accept="image/*"
-            maxSize={2 * 1024 * 1024}
+            maxSize={10 * 1024 * 1024}
           >
             <div className="flex flex-col">
               <button
@@ -78,7 +78,7 @@ export const ProfileImage: React.FC<ProfileImageProps> = ({
                 Upload new photo
               </button>
               <p className="mt-2 text-sm text-gray-500">
-                JPG, PNG or GIF up to 2MB
+                JPG, PNG or GIF up to 10MB
               </p>
               {profileImage && onImageRemove && (
                 <button

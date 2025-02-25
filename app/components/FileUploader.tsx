@@ -12,7 +12,7 @@ interface FileUploaderProps {
 export const FileUploader: React.FC<FileUploaderProps> = ({
   onFileSelect,
   accept = 'image/*',
-  maxSize = 2 * 1024 * 1024, // 2MB default
+  maxSize = 10 * 1024 * 1024, // 10MB default
   className = '',
   children
 }) => {
@@ -30,7 +30,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
 
     const file = files[0];
     if (file.size > maxSize) {
-      alert('File is too large. Maximum size is 2MB.');
+      alert('File is too large. Maximum size is 10MB.');
       return;
     }
 
@@ -42,7 +42,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
     
     const file = e.target.files[0];
     if (file.size > maxSize) {
-      alert('File is too large. Maximum size is 2MB.');
+      alert('File is too large. Maximum size is 10MB.');
       return;
     }
 
@@ -70,7 +70,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
             Drag and drop or click to upload
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            Maximum file size: 2MB
+            Maximum file size: 10MB
           </p>
         </div>
       )}
