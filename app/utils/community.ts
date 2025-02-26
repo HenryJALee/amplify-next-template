@@ -7,8 +7,16 @@ const client = generateClient<Schema>();
 export const listCommunityPosts = async () => {
   const client = generateClient<Schema>();
   
-  try {
-    const response = await client.models.CommunityPost.list();
+  try { 
+    const response = await client.models.CommunityPost.listCommunityPostByMediaTypeAndSortOrder(
+      {
+          mediaType: "video",
+      },
+      {
+          limit: 5,
+          sortDirection: 'DESC'
+      }
+  );
     return response;
   } catch (error) {
     console.error('Error fetching community posts:', error);
@@ -20,6 +28,7 @@ export const createCommunityPost = async (
 data: {
   creator: string;
   caption: string;
+  mediaType: string;
   mediaUrl: string;
   mediaKey: string;
 }): Promise<any> => {  
@@ -31,6 +40,7 @@ data: {
     const response = await client.models.CommunityPost.create({
       creator: data.creator,
       caption: data.caption,
+      mediaType: 'video',
       mediaUrl: data.mediaUrl.replace('community-videos', 'compressed-videos'),
       mediaKey: data.mediaKey.replace('community-videos', 'compressed-videos').replace(/\.(mp4|mov)$/, '.mp4'),
       sortOrder: sortnumber
