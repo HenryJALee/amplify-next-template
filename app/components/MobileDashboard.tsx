@@ -142,27 +142,72 @@ const MobileDashboard: React.FC<MobileDashboardProps> = ({
       // Add this code to your renderContent function in MobileDashboard.tsx
       // This should be added as a new case before the default case
 
-        case 'profile':
-        return (
-          <div className="space-y-4 px-4 py-4">
-            {/* Profile Image and Welcome Message */}
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className="flex-shrink-0">
-                  <DomeProfilePicture 
-                    profileImage={profileImage?.url || null}
-                    isLoading={false}
-                    size="md"
-                    showUploadButton={true}
-                    // Add the required callbacks
-                    onImageUpload={onImageUpload}  // Add this
-                    onImageRemove={onImageRemove}  // Add this
-      />
-                </div>
-                <p className="text-pink-500 text-lg">
-                  Not to be dramatic, but your being here literally made our whole day sparkle! ⭐
-                </p>
-              </div>
+
+case 'profile':
+  return (
+    <div className="space-y-4 px-4 py-4">
+      {/* Profile Image and Welcome Message */}
+      <div className="bg-white p-6 rounded-lg shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="flex-shrink-0">
+            <DomeProfilePicture 
+              profileImage={profileImage}
+              isLoading={false}
+              size="md"
+              showUploadButton={true}
+              // Add the required callbacks
+              onImageUpload={onImageUpload}  // Add this
+              onImageRemove={onImageRemove}  // Add this
+/>
+          </div>
+          <p className="text-pink-500 text-lg">
+            Not to be dramatic, but your being here literally made our whole day sparkle! ⭐
+          </p>
+        </div>
+      </div>
+      
+      {/* Personal Information Section */}
+      <div className="bg-white p-6 rounded-lg shadow-sm">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-lg font-semibold">Personal Information</h2>
+          <button
+            className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
+          >
+            Edit
+          </button>
+        </div>
+        
+        {/* Information Fields - Text Aligned Right */}
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-sm font-medium text-gray-500">Username</h3>
+            <p className="mt-1 text-right">henners</p>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">First Name</h3>
+              <p className="mt-1 text-right">Henry</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Last Name</h3>
+              <p className="mt-1 text-right">Lee</p>
+            </div>
+          </div>
+          
+          <div>
+            <h3 className="text-sm font-medium text-gray-500">Address</h3>
+            <p className="mt-1 text-right">2753 Caminito Eldorado</p>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">City</h3>
+              <p className="mt-1 text-right">LONDON</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">State</h3>
+              <p className="mt-1 text-right">London</p>
             </div>
             
             {/* Personal Information Section */}

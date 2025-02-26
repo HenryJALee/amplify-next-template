@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useState } from 'react'; 
+import { ChevronDown, ChevronUp, Heart } from 'lucide-react'; 
+import Image from 'next/image';
 
 interface AmbassadorSpotlightProps {
   compact?: boolean;
@@ -14,49 +15,49 @@ const spotlightData = [
   { question: "If you had a scent, what would it be called?", answer: "Tropical Breeze" }
 ];
 
-const AmbassadorSpotlight: React.FC<AmbassadorSpotlightProps> = ({ 
-  compact = false, 
-  userName = "vlogs.w.s.c"
+const AmbassadorSpotlight: React.FC<AmbassadorSpotlightProps> = ({
+  compact = false,
+  userName = "vlogs.w.s.c" 
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-
-  const InitialsAvatar = () => (
-    <div 
-      className={`
-        flex items-center justify-center rounded-full
-        ${compact ? 'w-12 h-12' : 'w-24 h-24'}
-        bg-gradient-to-r from-pink-200 to-purple-200
-      `}
-    >
-      <span 
-        className={`
-          font-semibold text-pink-600
-          ${compact ? 'text-lg' : 'text-3xl'}
-        `}
-      >
-        V
-      </span>
-    </div>
-  );
-
+  
   return (
     <div className="bg-white rounded-lg shadow-[0_0_10px_#ff00ff] border border-[#ff00ff] p-4">
       {/* Header section - always visible */}
-      <div 
-        className="flex items-center justify-between cursor-pointer"
+      <div
+        className={`flex ${compact ? 'flex-col items-center' : 'items-center justify-between'} cursor-pointer`}
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <div className="flex items-center gap-3">
-          <div className="border-2 border-pink-400 rounded-full">
-            <InitialsAvatar />
+        {/* Left side with avatar - in mobile view, this is centered at the top */}
+        <div className={`${compact ? 'mb-2' : ''} flex items-center ${compact ? 'justify-center' : ''}`}>
+          {/* Replace InitialsAvatar with actual image */}
+          <div className={`border-2 border-pink-400 rounded-full overflow-hidden
+            ${compact ? 'w-14 h-14' : 'w-24 h-24'}`}>
+            <Image 
+              src="/icons/sienna-chiara.png" 
+              alt="Ambassador vlogs.w.s.c"
+              width={compact ? 56 : 96} 
+              height={compact ? 56 : 96}
+              className="object-cover"
+            />
           </div>
-          <span className="font-medium text-pink-500">@{userName}</span>
+          {!compact && (
+            <span className="font-medium text-pink-500 ml-3">@{userName}</span>
+          )}
         </div>
-        <div className="flex items-center gap-2">
+        
+        {/* Right side with title - in mobile view, this is below the avatar */}
+        <div className={`flex ${compact ? 'flex-col items-center' : 'items-center'} gap-2`}>
           <h2 className="text-xl font-bold text-pink-500">
             Ambassador Spotlight <span className="text-yellow-400">✨</span>
           </h2>
-          <button 
+          
+          {/* Username in mobile view appears under the title */}
+          {compact && (
+            <span className="font-medium text-pink-500">@{userName}</span>
+          )}
+          
+          <button
             className="text-pink-500 hover:text-pink-600 transition-colors"
             aria-label={isExpanded ? 'Collapse' : 'Expand'}
           >
@@ -64,14 +65,25 @@ const AmbassadorSpotlight: React.FC<AmbassadorSpotlightProps> = ({
           </button>
         </div>
       </div>
-
+      
+      {/* "Why we love them" section */}
+      <div className={`flex ${compact ? 'flex-col items-center' : 'items-center'} gap-2 text-pink-600 mt-3`}>
+        <div className="flex items-center">
+          <Heart className="w-4 h-4 mr-1" />
+          <span className="font-medium">Why we love them:</span>
+        </div>
+        <p className={`${compact ? 'text-center text-sm' : ''}`}>
+          Vlogs.w.s.c has great style and well shot videos that you will watch till the end. A Must Follow
+        </p>
+      </div>
+      
       {/* Dropdown content */}
       {isExpanded && (
         <div className="mt-4 space-y-4 transition-all duration-300 ease-in-out">
           <div className="border-t pt-4">
             {spotlightData.map((item, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className="mb-4 p-3 bg-pink-50 rounded-lg"
               >
                 <h4 className="font-medium text-pink-500">{item.question}</h4>
