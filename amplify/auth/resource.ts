@@ -18,4 +18,10 @@ export const auth = defineAuth({
          },
        },
       },
+      senders: {
+        email: {
+          fromEmail: "preppy@wonder-society.com",
+          fromName: "Wonder Society"
+        }
+      }
     })

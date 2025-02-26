@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import { generateClient } from "aws-amplify/api";
 
 const ReferralChallenge = () => {
   const [emails, setEmails] = useState<string[]>([]);
   const [currentEmail, setCurrentEmail] = useState("");
   const [error, setError] = useState("");
+  
 
   const validateEmail = (email: string) => {
     const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
