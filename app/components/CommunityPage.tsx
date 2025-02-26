@@ -38,9 +38,15 @@ export default function CommunityPage({ isMobile }: CommunityPageProps) {
     const loadInitialPosts = async () => {
       try {
         setIsLoading(true);
-        const response = await client.models.CommunityPost.list({
-          limit: 5
-        });
+        const response = await client.models.CommunityPost.listCommunityPostByMediaTypeAndSortOrder(
+          {
+              mediaType: "video",
+          },
+          {
+              limit: 5,
+              sortDirection: 'ASC',
+          }
+      );
         
         const thirtySecondsAgo = new Date(Date.now() - 30 * 1000); // 30 seconds ago
 
@@ -87,10 +93,16 @@ export default function CommunityPage({ isMobile }: CommunityPageProps) {
       if (!hasMore || !lastKey) return;
 
       try {
-        const response = await client.models.CommunityPost.list({
-          limit: 5,
-          nextToken: lastKey
-        });
+        const response = await client.models.CommunityPost.listCommunityPostByMediaTypeAndSortOrder(
+          {
+              mediaType: "video",
+          },
+          {
+              limit: 5,
+              sortDirection: 'ASC',
+              nextToken: lastKey
+          }
+      );
 
         if (response.data) {
           const processedPosts = await Promise.all(
