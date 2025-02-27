@@ -1,14 +1,14 @@
 'use client';
 
 import { generateClient } from "aws-amplify/data";
-import { getUrl } from 'aws-amplify/storage';
+//import { getUrl } from 'aws-amplify/storage';
 import type { Schema } from "@/amplify/data/resource";
 import React, { useRef, useState, useEffect } from 'react';
 import { Link2, User, LogOut } from 'lucide-react';
 import { signOut, getCurrentUser } from 'aws-amplify/auth';
 import { useRouter } from 'next/navigation';
 import { VideoUploader } from './components/VideoUploader';
-import { createCommunityPost, listCommunityPosts } from './utils/community';
+import { createCommunityPost } from './utils/community';
 import Image from 'next/image'
 import { Amplify } from 'aws-amplify';
 import outputs from "@/amplify_outputs.json";
