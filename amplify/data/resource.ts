@@ -26,7 +26,7 @@ const schema = a.schema({
       profileImageKey: a.string(),
       points: a.integer()
     })
-    .authorization((allow) => [allow.owner()]),
+    .authorization((allow) => [allow.authenticated()]),
   
     Message: a
       .model({
@@ -36,7 +36,7 @@ const schema = a.schema({
         timestamp: a.string(),
         read: a.boolean()
       })
-      .authorization((allow) => [allow.owner()]),
+      .authorization((allow) => [allow.authenticated()]),
 
     CommunityPost: a.model({
         id: a.id(),
