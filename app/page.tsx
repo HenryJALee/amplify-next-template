@@ -246,7 +246,7 @@ export default function Page() {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-
+  {/* fetch posts }
   useEffect(() => {
     const fetchPosts = async () => {
         console.log("🔄 fetchPosts() function is running..."); // ✅ Check if function runs
@@ -353,7 +353,8 @@ export default function Page() {
       };
       fetchPosts();
   }, [activeSection]);
-    
+
+  {/* Habdle changes */}  
   // Handle input changes
   const handleInputChange = (field: keyof User, value: string) => {
     setFormData(prev => ({

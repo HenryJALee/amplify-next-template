@@ -63,17 +63,31 @@ export default function CommunityPage({ isMobile }: CommunityPageProps) {
           const processedPosts = await Promise.all(
             filteredPosts.map(async (post) => {
               if (post.mediaKey) {
-                const signedURL = await getUrl({
-                  key: post.mediaKey,
-                  options: { accessLevel: 'guest', validateObjectExistence: true }
-                });
-                return { ...post, mediaUrl: signedURL.url.href };
+                try {
+                  const signedURL = await getUrl({
+                    path: post.mediaKey,
+                  });
+                  return { ...post, mediaUrl: signedURL.url.href };
+                } catch (error) {
+                  // Log the error but don't let it break the whole process
+                  console.error(`Failed to create signed URL for post ${post.id}, mediaKey: ${post.mediaKey}:`, error);
+                  // Return the post without mediaUrl
+                  return post;
+                }
               }
               return post;
             })
           );
 
-          setVisiblePosts(processedPosts);
+          const validPosts = processedPosts.filter(post => {
+            if (post.mediaKey && !post.mediaUrl) {
+              console.log(`Filtering out post ${post.id} due to missing signed URL`);
+              return false;
+            }
+            return true;
+          });
+
+          setVisiblePosts(validPosts);
           setLastKey(response.nextToken || null);
           setHasMore(!!response.nextToken);
         }
@@ -109,8 +123,7 @@ export default function CommunityPage({ isMobile }: CommunityPageProps) {
             response.data.map(async (post) => {
               if (post.mediaKey) {
                 const signedURL = await getUrl({
-                  key: post.mediaKey,
-                  options: { accessLevel: 'guest', validateObjectExistence: true }
+                  path: post.mediaKey,
                 });
                 return { ...post, mediaUrl: signedURL.url.href };
               }

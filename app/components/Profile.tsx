@@ -27,11 +27,7 @@ const Profile: React.FC<ProfileProps> = ({
       if (ambassador?.profileImageKey) {
         try {
           const signedURL = await getUrl({
-            key: ambassador.profileImageKey,
-            options: {
-              accessLevel: 'guest',
-              validateObjectExistence: true
-            }
+            path: ambassador.profileImageKey,
           });
           setProfileImage(signedURL.url.href);
         } catch (error) {

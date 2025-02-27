@@ -71,11 +71,7 @@ export const VideoUploader: React.FC<VideoUploaderProps> = ({
 
       // Get video URL
       const urlResult = await getUrl({
-        key: videoKey,
-        options: {
-          accessLevel: 'guest',
-          validateObjectExistence: true
-        }
+        path: videoKey,
       });
 
       onUploadComplete(videoKey, urlResult.url.href);
