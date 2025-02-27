@@ -1,10 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { X } from 'lucide-react';
+import { generateClient } from "aws-amplify/api";
+import { getCurrentUser } from 'aws-amplify/auth';
+import { type Schema } from '../../amplify/data/resource';
+
+// Create the API client
+const client = generateClient<Schema>();
+
+interface PointsContextType {
+  totalPoints: number;
+  updatePoints: (points: number) => void;
+}
+
+// Points context for the whole challenges section
+const PointsContext = createContext<PointsContextType>({
+  totalPoints: 0,
+  updatePoints: () => {}
+});
 
 const ReferralChallenge = () => {
   const [emails, setEmails] = useState<string[]>([]);
   const [currentEmail, setCurrentEmail] = useState("");
   const [error, setError] = useState("");
+  
 
   const validateEmail = (email: string) => {
     const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -125,7 +143,6 @@ const ReferralChallenge = () => {
   );
 };
 
-// Instead of CustomColorChallenge, we'll create two simple components:
 const VideoChallenge = () => {
   return (
     <div style={{ backgroundColor: "#f9e6fb" }} className="relative rounded-2xl p-4 mx-4 mb-4">
@@ -145,37 +162,230 @@ const VideoChallenge = () => {
 };
 
 const SocialChallenge = () => {
+  const { updatePoints } = useContext(PointsContext);
+  const [tiktokLink, setTiktokLink] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Function to validate TikTok URL
+  const validateTikTokUrl = (url: string) => {
+    // Basic validation for TikTok URLs
+    return url.includes('tiktok.com');
+  };
+
+  // Function to submit TikTok link and award points
+  const handleSubmitTikTok = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    if (!tiktokLink) {
+      setError("Please enter your TikTok link");
+      setLoading(false);
+      return;
+    }
+
+    if (!validateTikTokUrl(tiktokLink)) {
+      setError("Please enter a valid TikTok URL");
+      setLoading(false);
+      return;
+    }
+
+    try {
+
+      //Get Current user
+      const currentUser = await getCurrentUser();
+      console.log('Current user:', currentUser);
+
+      const userdata = await client.models.User.list({
+        filter: { cognitoId: { eq: currentUser.userId } }
+      });
+
+      //get current points
+      const currentPoints = userdata.data[0].points || 0;
+
+      // add challenge to Challenges data
+      await client.models.Challenges.create({
+          userId: currentUser.userId,
+          username: userdata.data[0].username,
+          challengeType: 'tiktokChallenge',  // 'tiktok' or 'insta'
+          challengeInfo: tiktokLink,
+          challengeDate: new Date().toISOString(),
+          pointsGiven: 5,
+      });
+
+      await client.models.User.update({
+        id: userdata.data[0].id,
+        cognitoId: currentUser.userId,
+        points: currentPoints + 5,
+      });
+
+      // Update points in the UI (5 points for completing)
+      updatePoints(5);
+      setIsSubmitted(true);
+      setTiktokLink("");
+    } catch (err) {
+      console.error("Error submitting social challenge:", err);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div style={{ backgroundColor: "#e6f8ff" }} className="relative rounded-2xl p-4 mx-4 mb-4">
+    <div style={{ backgroundColor: "#e6f8ff" }} className="relative rounded-2xl p-4 mx-4">
       <div className="relative z-10">
-        <h3 style={{ color: "#00aeef" }} className="font-medium text-lg mb-2">
-          Social Challenge
-        </h3>
-        <div className="flex justify-between items-center">
-          <p style={{ color: "#00aeef" }}>Share 3 posts with #Wonderverse! ✨</p>
-          <span className="bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-sm">
-            NOT YET LIVE
-          </span>
+      <div className="flex justify-between items-center mb-2">
+          <h3 style={{ color: "#00aeef" }} className="font-medium text-lg">
+            Social Challenge
+          </h3>
+          <span style={{ color: "#00aeef" }} className="font-medium">+5 points</span>
         </div>
+        <p style={{ color: "#00aeef", margin: 0 }}>
+          ✨ CALLING ALL WONDER MAKERS! ✨
+
+          POV: Your main character moment just dropped in cloud-soft blue 💙
+
+          Join our #BlueWonderverse GRWM in Blue Challenge and win our limited edition Main Character hoodie!
+          
+          Here&apos;s the assignment:
+
+          1. Create your Get Ready With Me in blue!!
+          2. Post your creation on TikTok AND Wonder-society.com
+          3. Tag @wonderverselab so we don&apos;t miss your texture journey
+          4. Enter by Saturday, February 29, 2025
+
+          The plushest hoodie is waiting for your cloud-soft self! Welcome to your comfort era ⭐
+        </p>
+
+        {!isSubmitted ? (
+          <div className="mt-4">
+            <form onSubmit={handleSubmitTikTok}>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <input
+                    type="url"
+                    value={tiktokLink}
+                    onChange={(e) => {
+                      setTiktokLink(e.target.value);
+                      setError("");
+                    }}
+                    placeholder="Enter your TikTok link"
+                    className="w-full p-2 border rounded"
+                  />
+                  {error && (
+                    <p className="text-red-500 text-sm mt-1">{error}</p>
+                  )}
+                </div>
+                <button
+                  type="submit"
+                  style={{ backgroundColor: "#00aeef" }}
+                  className="px-4 py-2 text-white rounded"
+                  disabled={loading}
+                >
+                  {loading ? "Submitting..." : "Submit"}
+                </button>
+              </div>
+            </form>
+          </div>
+        ) : (
+          <div className="mt-4 p-3 rounded-md" style={{ backgroundColor: "rgba(0, 174, 239, 0.1)" }}>
+            <p style={{ color: "#00aeef", fontWeight: "bold" }}>
+              ✅ Thanks for participating! You&apos;ve earned 5 points!
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 const ChallengesSection = () => {
+  const [totalPoints, setTotalPoints] = useState(0);
+
+  const updatePoints = (points: number) => {
+    setTotalPoints(prev => prev + points);
+    
+    // Store the updated points in localStorage
+    localStorage.setItem('userPoints', String(totalPoints + points));
+  };
+
+  // Load initial points when component mounts
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const currentUser = await getCurrentUser();
+        console.log('Current user:', currentUser);
+
+        const userdata = await client.models.User.list({
+          filter: { cognitoId: { eq: currentUser.userId } }
+        });
+
+        // Check if we have user data and set the points
+        if (userdata.data && userdata.data.length > 0) {
+          const points = userdata.data[0].points ?? 0; // Use nullish coalescing
+          setTotalPoints(points);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    // Call the async function
+    fetchUserData();
+  }, []);
+
+  
   return (
-    <div className="p-4">
-      <div className="bg-white rounded-lg shadow-lg p-4">
-        <h2 style={{ color: "#ff47b0" }} className="text-xl font-semibold mb-4">
-          Challenges
-        </h2>
-        <div className="space-y-6">
-          <ReferralChallenge />
-          <VideoChallenge />
-          <SocialChallenge />
+    <PointsContext.Provider value={{ totalPoints, updatePoints }}>
+      <div className="p-4">
+        {/* Points Display */}
+        <div className="bg-white rounded-lg shadow-lg p-4 mb-4">
+          <div className="flex justify-between items-center">
+            <h2 style={{ color: "#ff47b0" }} className="text-xl font-semibold">
+              Total Points
+            </h2>
+            <div className="bg-pink-100 px-4 py-2 rounded-full">
+              <span style={{ color: "#ff47b0" }} className="text-lg font-bold">{totalPoints}</span>
+            </div>
+          </div>
+        </div>
+        {/* Rewards Section */}
+        <div className="bg-white rounded-lg shadow-lg p-4 mb-4">
+          <h2 style={{ color: "#ff47b0" }} className="text-xl font-semibold mb-4">
+            Rewards
+          </h2>
+          <div className="flex items-center justify-between p-3">
+            <div>
+              <h3 className="font-medium">Limited Edition Pink Yacht Club Parfum</h3>
+              <p className="text-gray-600">50 points gets you the Pink Yacht Club!</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span style={{ color: "#ff47b0" }} className="font-medium">{totalPoints}/50 points</span>
+              <button 
+                style={{ backgroundColor: "#ff47b0" }}
+                className="px-4 py-2 text-white rounded"
+                disabled={totalPoints < 50}
+              >
+                {totalPoints >= 50 ? "Redeem" : "Earn More"}
+              </button>
+            </div>
+          </div>
+        </div>
+        {/* Challenges Container */}
+        <div className="bg-white rounded-lg shadow-lg p-4 overflow-hidden">
+          <h2 style={{ color: "#ff47b0" }} className="text-xl font-semibold mb-4">
+            Challenges
+          </h2>
+          <div className="space-y-6">
+            <ReferralChallenge />
+            <VideoChallenge />
+            <SocialChallenge />
+          </div>
         </div>
       </div>
-    </div>
+    </PointsContext.Provider>
   );
 };
 
