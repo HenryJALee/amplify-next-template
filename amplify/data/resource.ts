@@ -1,5 +1,7 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 import { notifyWinner } from "../functions/notify-winner/resource"
+import { use } from "react";
+import { UserPoolIdentityProvider } from "aws-cdk-lib/aws-cognito";
 
 
 /*== STEP 1 ===============================================================
@@ -21,9 +23,8 @@ const schema = a.schema({
       state: a.string(),
       zipCode: a.string(),
       country: a.string(),
-      profileImageKey: a.string()
-      
-    
+      profileImageKey: a.string(),
+      points: a.integer()
     })
     .authorization((allow) => [allow.owner()]),
   
@@ -54,6 +55,16 @@ const schema = a.schema({
         index("mediaType")
           .sortKeys(["sortOrder"])
       ]),
+    
+    Challenges: a.model({
+      id: a.id(),
+      userId: a.string(),
+      username: a.string(),
+      challengeType: a.string(),  // 'tiktok' or 'insta'
+      challengeInfo: a.string(),
+      challengeDate: a.string(),
+      pointsGiven: a.integer(),
+    }).authorization((allow) => [allow.authenticated()]),
 
     PrizeRecord:  a.model({
       id: a.id(),

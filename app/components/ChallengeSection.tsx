@@ -1,16 +1,11 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { X } from 'lucide-react';
 import { generateClient } from "aws-amplify/api";
+import { getCurrentUser } from 'aws-amplify/auth';
+import { type Schema } from '../../amplify/data/resource';
 
 // Create the API client
-const client = generateClient();
-
-// Define TypeScript interfaces for API calls
-interface SocialChallengeInput {
-  tiktokLink: string;
-  challengeType: string;
-  pointsEarned: number;
-}
+const client = generateClient<Schema>();
 
 interface PointsContextType {
   totalPoints: number;
@@ -198,31 +193,33 @@ const SocialChallenge = () => {
     }
 
     try {
-      // Store the submission in local storage temporarily
-      // In a real app, you would replace this with your actual API call
-      localStorage.setItem('socialChallengeSubmission', JSON.stringify({
-        tiktokLink,
-        timestamp: new Date().toISOString(),
-        pointsEarned: 5
-      }));
 
-      // Your real API call would look something like this:
-      // Uncomment when your API is ready:
-      /*
-      await client.graphql({
-        query: `
-          mutation UpdateUserPoints($points: Int!) {
-            updateUserPoints(points: $points) {
-              success
-              totalPoints
-            }
-          }
-        `,
-        variables: {
-          points: 5
-        }
+      //Get Current user
+      const currentUser = await getCurrentUser();
+      console.log('Current user:', currentUser);
+
+      const userdata = await client.models.User.list({
+        filter: { cognitoId: { eq: currentUser.userId } }
       });
-      */
+
+      //get current points
+      const currentPoints = userdata.data[0].points || 0;
+
+      // add challenge to Challenges data
+      await client.models.Challenges.create({
+          userId: currentUser.userId,
+          username: userdata.data[0].username,
+          challengeType: 'tiktokChallenge',  // 'tiktok' or 'insta'
+          challengeInfo: tiktokLink,
+          challengeDate: new Date().toISOString(),
+          pointsGiven: 5,
+      });
+
+      await client.models.User.update({
+        id: userdata.data[0].id,
+        cognitoId: currentUser.userId,
+        points: currentPoints + 5,
+      });
 
       // Update points in the UI (5 points for completing)
       updatePoints(5);
@@ -252,11 +249,11 @@ const SocialChallenge = () => {
 
           Join our #BlueWonderverse GRWM in Blue Challenge and win our limited edition Main Character hoodie!
           
-          Here's the assignment:
+          Here&apos;s the assignment:
 
           1. Create your Get Ready With Me in blue!!
           2. Post your creation on TikTok AND Wonder-society.com
-          3. Tag @wonderverselab so we don't miss your texture journey
+          3. Tag @wonderverselab so we don&apos;t miss your texture journey
           4. Enter by Saturday, February 29, 2025
 
           The plushest hoodie is waiting for your cloud-soft self! Welcome to your comfort era ⭐
@@ -295,7 +292,7 @@ const SocialChallenge = () => {
         ) : (
           <div className="mt-4 p-3 rounded-md" style={{ backgroundColor: "rgba(0, 174, 239, 0.1)" }}>
             <p style={{ color: "#00aeef", fontWeight: "bold" }}>
-              ✅ Thanks for participating! You've earned 5 points!
+              ✅ Thanks for participating! You&apos;ve earned 5 points!
             </p>
           </div>
         )}
@@ -316,40 +313,30 @@ const ChallengesSection = () => {
 
   // Load initial points when component mounts
   useEffect(() => {
-    // Check for locally stored points first
-    const storedPoints = localStorage.getItem('userPoints');
-    if (storedPoints) {
-      setTotalPoints(parseInt(storedPoints, 10));
-    }
-
-    // In a real app, you would fetch points from your API
-    // Uncomment when your API is ready:
-    /*
-    const fetchUserPoints = async () => {
+    const fetchUserData = async () => {
       try {
-        const response = await client.graphql({
-          query: `
-            query GetUserPoints {
-              getUserPoints {
-                totalPoints
-              }
-            }
-          `
+        const currentUser = await getCurrentUser();
+        console.log('Current user:', currentUser);
+
+        const userdata = await client.models.User.list({
+          filter: { cognitoId: { eq: currentUser.userId } }
         });
-        
-        if (response.data?.getUserPoints?.totalPoints) {
-          setTotalPoints(response.data.getUserPoints.totalPoints);
-          localStorage.setItem('userPoints', String(response.data.getUserPoints.totalPoints));
+
+        // Check if we have user data and set the points
+        if (userdata.data && userdata.data.length > 0) {
+          const points = userdata.data[0].points ?? 0; // Use nullish coalescing
+          setTotalPoints(points);
         }
-      } catch (err) {
-        console.error("Error fetching user points:", err);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
       }
     };
 
-    fetchUserPoints();
-    */
+    // Call the async function
+    fetchUserData();
   }, []);
 
+  
   return (
     <PointsContext.Provider value={{ totalPoints, updatePoints }}>
       <div className="p-4">
