@@ -146,6 +146,7 @@ const VideoChallenge = () => {
   );
 };
 
+// UPDATED CODE (lines 137-145):
 const SocialChallenge = () => {
   return (
     <div style={{ backgroundColor: "#e6f8ff" }} className="relative rounded-2xl p-4 mx-4 mb-4">
@@ -153,12 +154,42 @@ const SocialChallenge = () => {
         <h3 style={{ color: "#00aeef" }} className="font-medium text-lg mb-2">
           Social Challenge
         </h3>
-        <div className="flex justify-between items-center">
-          <p style={{ color: "#00aeef" }}>Share 3 posts with #Wonderverse! ✨</p>
-          <span className="bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-sm">
-            NOT YET LIVE
-          </span>
-        </div>
+        <p style={{ color: "#00aeef" }}>
+        ✨ CALLING ALL WONDER MAKERS! ✨
+
+              POV: Your main character moment just dropped in cloud-soft blue 💙
+
+              Join our #BlueWonderverse GRWM in Blue Challenge and win our limited edition Main Character hoodie! 
+              
+              
+              
+              
+              
+              
+              Here's the assignment:
+
+
+
+
+              1. Create your Get Ready With Me in blue!! 
+
+
+              2. Post your creation on TikTok AND Wonder-society.com
+
+
+              3. Tag @wonderverselab so we don't miss your texture journey
+
+
+              4. Enter by Saturday, February 29, 2025
+
+
+
+
+
+
+              The plushest hoodie is waiting for your cloud-soft self! Welcome to your comfort era ⭐
+
+            </p>
       </div>
     </div>
   );
