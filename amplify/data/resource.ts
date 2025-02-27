@@ -22,6 +22,8 @@ const schema = a.schema({
       zipCode: a.string(),
       country: a.string(),
       profileImageKey: a.string()
+      
+    
     })
     .authorization((allow) => [allow.owner()]),
   
