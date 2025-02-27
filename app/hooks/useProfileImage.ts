@@ -40,7 +40,7 @@ export const useProfileImage = ({ userData, onUpdateUser }:UseProfileImageProps)
         
         setProfileImage({
           url: urlResult.url.href,
-          path: userData.profileImageKey
+          key: userData.profileImageKey
         });
       } catch (error) {
         console.error('Error loading profile image:', error);
