@@ -12,7 +12,7 @@ interface FileUploaderProps {
 export const FileUploader: React.FC<FileUploaderProps> = ({
   onFileSelect,
   accept = 'image/*',
-  maxSize = 10 * 1024 * 1024, // 10MB default
+  maxSize = 2 * 1024 * 1024, // 2MB default
   className = '',
   children
 }) => {

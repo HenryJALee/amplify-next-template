@@ -8,6 +8,8 @@ import { SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/solid';
 import { generateClient } from '@aws-amplify/api';
 import { Schema } from '@/amplify/data/resource';
 import { getUrl } from 'aws-amplify/storage';
+import Image from 'next/image';
+
 
 interface VideoPostProps {
   post: {
@@ -97,10 +99,7 @@ export default function VideoPost({ post, onLike }: VideoPostProps) {
           if (user.profileImageKey) {
             try {
               const { url } = await getUrl({
-                key: user.profileImageKey,
-                options: {
-                  expiresIn: 3600 // URL expires in 1 hour
-                }
+                path: user.profileImageKey,
               });
               // Update the profile with the URL
               setUserProfile(prev => prev ? {
@@ -194,15 +193,20 @@ export default function VideoPost({ post, onLike }: VideoPostProps) {
       {/* User info */}
       <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
         <div className="flex items-center space-x-2">
-          {userProfile?.profileImageKey ? (
-            <img 
-              src={userProfile?.userProfileImageUrl || undefined}  // You might need to construct the full URL depending on your setup
-              alt={userProfile?.username || undefined} 
-              className="w-8 h-8 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-gray-600" /> // Placeholder if no image
-          )}
+          <div className="w-[40px] h-[40px] rounded-full overflow-hidden flex-shrink-0">
+
+            {userProfile?.profileImageKey ? (
+              <Image
+                src={userProfile?.userProfileImageUrl || './icons/Sparkle.png'}
+                alt={`${userProfile?.username || 'User'}'s profile`}
+                width={40}  // adjust as needed
+                height={40} // adjust as needed
+                className="rounded-full"  // if you want circular avatar
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-gray-600" /> // Placeholder if no image
+            )}
+          </div>
           <span className="text-white font-medium">
             {userProfile?.username || 'Anonymous'}
           </span>

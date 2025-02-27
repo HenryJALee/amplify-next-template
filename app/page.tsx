@@ -304,11 +304,7 @@ export default function Page() {
                                 console.log("🔗 Found profileImageKey:", user.profileImageKey);
 
                                 const signedProfileImage = await getUrl({
-                                    key: user.profileImageKey,
-                                    options: {
-                                        accessLevel: 'guest',
-                                        validateObjectExistence: true
-                                    }
+                                    path: user.profileImageKey,
                                 });
 
                                 console.log("🖼 Signed profile image URL:", signedProfileImage.url.href);

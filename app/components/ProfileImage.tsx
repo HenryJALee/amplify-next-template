@@ -67,7 +67,7 @@ export const ProfileImage: React.FC<ProfileImageProps> = ({
           <FileUploader
             onFileSelect={handleFileSelect}
             accept="image/*"
-            maxSize={10 * 1024 * 1024}
+            maxSize={2 * 1024 * 1024}
           >
             <div className="flex flex-col">
               <button

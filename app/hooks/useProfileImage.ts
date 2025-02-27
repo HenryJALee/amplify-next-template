@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { uploadData, getUrl, remove } from 'aws-amplify/storage';
 import { getCurrentUser } from 'aws-amplify/auth';
+import { Spinner } from '../components/Spinner';
+
 
 export type ProfileImageType = {
   url: string;
@@ -32,11 +34,7 @@ export const useProfileImage = ({ userData, onUpdateUser }:UseProfileImageProps)
         console.log('Attempting to load profile image with key:', userData.profileImageKey);
         
         const urlResult = await getUrl({
-          key: userData.profileImageKey,
-          options: {
-            accessLevel: 'guest',
-            validateObjectExistence: true
-          }
+          path: userData.profileImageKey,
         });
         
         console.log('Successfully generated URL for profile image:', urlResult);
@@ -87,25 +85,20 @@ export const useProfileImage = ({ userData, onUpdateUser }:UseProfileImageProps)
       // Upload the new image
       await uploadData({
         data: file,
-        key: filePath,
+        path: filePath,
         options: {
-          contentType: file.type,
-          accessLevel: 'guest'
+          contentType: file.type
         }
       }).result;
 
       console.log('Successfully uploaded file to S3');
 
       // Add a small delay to ensure file is available
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 10000));
 
       // Get the URL of the uploaded image
       const urlResult = await getUrl({
-        key: filePath,
-        options: {
-          accessLevel: 'guest',
-          validateObjectExistence: true
-        }
+        path: filePath
       });
 
       console.log('Generated URL for uploaded image:', urlResult);
@@ -115,10 +108,7 @@ export const useProfileImage = ({ userData, onUpdateUser }:UseProfileImageProps)
         try {
           console.log('Attempting to delete old profile image:', profileImage.key);
           await remove({
-            key: profileImage.key,
-            options: {
-              accessLevel: 'guest'
-            }
+            path: profileImage.key,
           });
           console.log('Successfully deleted old profile image');
         } catch (error) {
@@ -161,10 +151,7 @@ export const useProfileImage = ({ userData, onUpdateUser }:UseProfileImageProps)
 
       // Remove the image from storage
       await remove({
-        key: profileImage.key,
-        options: {
-          accessLevel: 'guest'
-        }
+        path: profileImage.key,
       });
 
       console.log('Successfully removed image from storage');
@@ -194,6 +181,7 @@ export const useProfileImage = ({ userData, onUpdateUser }:UseProfileImageProps)
     profileImage,
     isLoading,
     handleImageUpload,
-    handleRemoveProfilePicture
+    handleRemoveProfilePicture,
+    isImageLoading: !profileImage?.url  // Add this line
   };
 };

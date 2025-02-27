@@ -1,6 +1,8 @@
 import React from 'react';
 import { ProfileImageType } from '../../hooks/useProfileImage';
 import { FileUploader } from '../FileUploader';
+import { Spinner } from '../Spinner';
+
 
 interface DomeProfilePictureProps {
   profileImage: ProfileImageType | null | string; // Allow string for static paths
@@ -11,6 +13,7 @@ interface DomeProfilePictureProps {
   onImageRemove?: () => Promise<void>;
   showUploadButton?: boolean;
   isStatic?: boolean; // New prop to indicate if this is a static image
+  isImageLoading?: boolean;
 }
 
 const DomeProfilePicture: React.FC<DomeProfilePictureProps> = ({
@@ -20,6 +23,8 @@ const DomeProfilePicture: React.FC<DomeProfilePictureProps> = ({
   onImageUpload,
   showUploadButton = false,
   isStatic = false, // Default to false for backward compatibility
+  isLoading = false, // Default to false for backward compatibility
+  isImageLoading = false // Default to false for backward compatibility
 }) => {
   
   const sizeClasses = {
@@ -64,7 +69,10 @@ const DomeProfilePicture: React.FC<DomeProfilePictureProps> = ({
                 width="400" 
                 height="500"
               >
-                {getImageUrl() ? (
+              {(isLoading || isImageLoading) ? (  
+                <Spinner />
+              ) : (
+                getImageUrl() ? (
                   <image
                     href={getImageUrl()}
                     width="400"
@@ -98,7 +106,8 @@ const DomeProfilePicture: React.FC<DomeProfilePictureProps> = ({
                       />
                     </g>
                   </svg>
-                )}
+                )
+              )}
               </pattern>
             </defs>
 
