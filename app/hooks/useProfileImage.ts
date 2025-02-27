@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { uploadData, getUrl, remove } from 'aws-amplify/storage';
 import { getCurrentUser } from 'aws-amplify/auth';
-import { Spinner } from '../components/Spinner';
 
 
 export type ProfileImageType = {
