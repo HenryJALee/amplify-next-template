@@ -49,10 +49,8 @@ export const VideoUploader: React.FC<VideoUploaderProps> = ({
       // Upload video
       await uploadData({
         data: file,
-        key: videoKey,
+        path: videoKey,
         options: {
-          contentType: fileType,
-          accessLevel: 'guest',
           onProgress: ({ transferredBytes, totalBytes }) => {
             console.log('Progress:', { transferredBytes, totalBytes }); // Debug log
             if (totalBytes && totalBytes > 0) {
